@@ -39,7 +39,7 @@ const attendanceToday = {
   attendance_end_time: "12:00",
 }
 
-type SignInScreenProps = NativeStackScreenProps<RootStackParamList, 'SignIn'>;
+type SignInScreenProps = NativeStackScreenProps<RootStackParamList>;
 
 const Attendance = ({ navigation }: SignInScreenProps) => {
   //   const dispatch = useDispatch();
@@ -89,9 +89,9 @@ const Attendance = ({ navigation }: SignInScreenProps) => {
   //   const hasStarted = !!attendanceToday?.attendance_start_time;
   //   const hasEnded = !!attendanceToday?.attendance_end_time;
 
-  const toMapScreen = useCallback(() => {
+  const toMapScreen = () => {
     navigation.navigate('MapScreen');
-  }, [navigation]);
+  };
 
   return (
     <View style={styles.container}>

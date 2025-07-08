@@ -2,6 +2,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import {
   Alert,
   Pressable,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -68,15 +69,16 @@ function SignIn({ navigation }: SignInScreenProps) {
     // navigation.navigate('SignUp');
   }, [email, password]);
 
-  const toSignUp = useCallback(() => {
-    navigation.navigate('SignUp');
-  }, [navigation]);
+  // const toSignUp = useCallback(() => {
+  //   navigation.navigate('SignUp');
+  // }, [navigation]);
 
   const canGoNext = email && password;
 
   return (
     <DismissKeyboardView>
       <View style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
         <Text style={styles.title}>로그인</Text>
 
         <View style={styles.inputWrapper}>
@@ -124,9 +126,9 @@ function SignIn({ navigation }: SignInScreenProps) {
             <Text style={styles.loginButtonText}>로그인</Text>
           </Pressable>
 
-          <Pressable onPress={toSignUp}>
+          {/* <Pressable onPress={toSignUp}>
             <Text style={styles.signUpText}>회원가입</Text>
-          </Pressable>
+          </Pressable> */}
         </View>
       </View>
     </DismissKeyboardView>
