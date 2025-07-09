@@ -15,6 +15,14 @@ import dayjs from 'dayjs';
 import Today from '../subPages/Today';
 import { RootStackParamList } from '../../AppInner';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useAppDispatch } from '../store';
+import attendanceSlice from '../slices/attendance';
+import Config from 'react-native-config';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store/reducer';
+import axios, { AxiosError } from 'axios';
+import EncryptedStorage from 'react-native-encrypted-storage';
+import userSlice from '../slices/user';
 // import BottomBar from '../components/BottomBar'; // 하단 네비게이션 바
 // import MyLocation from './MyLocation'; // 위치 모달 컴포넌트
 // import Today from '../components/Today';
@@ -36,14 +44,61 @@ const attendanceToday = {
   attendance_start_date: "2025-07-07",
   attendance_start_time: "09:00",
   attendance_end_date: "2025-07-07",
-  attendance_end_time: "12:00",
+  attendance_end_time: "09:00",
 }
 
 type SignInScreenProps = NativeStackScreenProps<RootStackParamList>;
 
 const Attendance = ({ navigation }: SignInScreenProps) => {
   //   const dispatch = useDispatch();
-  const [showLocationModal, setShowLocationModal] = useState(false);
+  const dispatch = useAppDispatch();
+
+  const accessToken = useSelector((state: RootState) => state.user.accessToken);
+  const attendanceToday = useSelector((state: RootState) => state.attendance.attendanceToday);
+
+  useEffect(() => {
+    async function getAttendanceToday() {
+      try {
+        const response = await axios.get(
+          `${Config.API_URL}/app/attendance/today`,
+          {
+            headers: { authorization: `Bearer ${accessToken}` },
+          },
+        );
+        dispatch(attendanceSlice.actions.getAttendanceToday(response.data));
+      } catch (error) {
+        console.error('시간 정보 불러오기 실패:', error);
+        const errorResponse = (error as AxiosError<{ message: string }>).response;
+        console.error(errorResponse?.status)
+        if (errorResponse?.status === 419) {
+          const token = await EncryptedStorage.getItem('refreshToken');
+          console.log(token)
+          if (!token) {
+            Alert.alert('알림', '로그아웃 되었습니다.');
+            return;
+          }
+
+          const response = await axios.post(
+            `${Config.API_URL}/login/refreshToken`,
+            {},
+            {
+              headers: { authorization: `Bearer ${token}` },
+            }
+          );
+
+          dispatch(
+            userSlice.actions.setUser({
+              user_code: response.data.data.user_code,
+              user_name: response.data.data.user_name,
+              accessToken: response.data.data.accessToken,
+            })
+          );
+        }
+      }
+    }
+
+    getAttendanceToday();
+  }, [accessToken, dispatch]);
 
   //   const { timeDetail } = useSelector((state: any) => state.time);
   //   const { attendanceToday } = useSelector((state: any) => state.attendance);
@@ -86,8 +141,8 @@ const Attendance = ({ navigation }: SignInScreenProps) => {
   //     dispatch({ type: ATTENDANCE_UPDATE_REQUEST, data });
   //   };
 
-  //   const hasStarted = !!attendanceToday?.attendance_start_time;
-  //   const hasEnded = !!attendanceToday?.attendance_end_time;
+  const hasStarted = !!attendanceToday?.attendance_start_time;
+  const hasEnded = !!attendanceToday?.attendance_end_time;
 
   const toMapScreen = () => {
     navigation.navigate('MapScreen');
@@ -103,54 +158,51 @@ const Attendance = ({ navigation }: SignInScreenProps) => {
         <Today />
 
         <TouchableOpacity style={styles.locationBtn} onPress={toMapScreen}>
-          <Icon name="map-pin" size={18} color="#2563eb" />
-          <Text style={styles.locationText}>현재 위치 찾기</Text>
+          <Icon name="map-pin" size={20} color="#4F46E5" />
+          <Text style={styles.locationText}>GPS</Text>
         </TouchableOpacity>
 
         <View style={styles.buttonRow}>
           <TouchableOpacity
-            // disabled={hasStarted && !hasEnded}
-            // onPress={handleCheckIn}
+            disabled={hasStarted && !hasEnded}
             style={[
               styles.actionButton,
-              // hasStarted && !hasEnded ? styles.disabled : styles.active,
+              hasStarted && !hasEnded && styles.disabled,
             ]}
+            onPress={() => Alert.alert("출근 버튼 눌림")}
           >
-            <Text style={styles.buttonText}>출근</Text>
+            <View style={{ alignItems: 'center' }}>
+              <Icon name="log-in" size={28} color={hasStarted && !hasEnded ? '#9ca3af' : '#10b981'} />
+              <Text style={[styles.buttonText, { color: hasStarted && !hasEnded ? '#9ca3af' : '#10b981' }]}>출근</Text>
+            </View>
           </TouchableOpacity>
 
           <TouchableOpacity
-            // disabled={!hasStarted || hasEnded}
-            // onPress={handleCheckOut}
+            disabled={!hasStarted || hasEnded}
             style={[
               styles.actionButton,
-              // !hasStarted || hasEnded ? styles.disabled : styles.active,
+              (!hasStarted || hasEnded) && styles.disabled,
             ]}
+            onPress={() => Alert.alert("퇴근 버튼 눌림")}
           >
-            <Text style={styles.buttonText}>퇴근</Text>
+            <View style={{ alignItems: 'center' }}>
+              <Icon name="log-out" size={28} color={!hasStarted || hasEnded ? '#9ca3af' : '#ef4444'}
+              />
+              <Text style={[styles.buttonText, { color: !hasStarted || hasEnded ? '#9ca3af' : '#ef4444' },]}>퇴근</Text>
+            </View>
           </TouchableOpacity>
         </View>
       </ScrollView>
-
-      {/* <BottomBar /> */}
-
-      <Modal visible={showLocationModal} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            {/* <MyLocation closeModal={() => setShowLocationModal(false)} /> */}
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 };
 
-const InfoBlock = ({ title, value }: { title: string; value: string }) => (
-  <View style={{ marginBottom: 12 }}>
-    <Text style={styles.infoTitle}>{title}</Text>
-    <Text style={styles.infoValue}>{value}</Text>
-  </View>
-);
+// const InfoBlock = ({ title, value }: { title: string; value: string }) => (
+//   <View style={{ marginBottom: 12 }}>
+//     <Text style={styles.infoTitle}>{title}</Text>
+//     <Text style={styles.infoValue}>{value}</Text>
+//   </View>
+// );
 
 const styles = StyleSheet.create({
   container: {
@@ -165,6 +217,7 @@ const styles = StyleSheet.create({
   noticeBox: {
     backgroundColor: '#e0edff',
     borderColor: '#90caff',
+    justifyContent: 'center',
     borderWidth: 1,
     padding: 12,
     borderRadius: 8,
@@ -175,19 +228,26 @@ const styles = StyleSheet.create({
   locationBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
+    borderColor: '#e5e7eb',
+    backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: '#2563eb',
-    borderRadius: 6,
+    borderRadius: 8,
     padding: 12,
     marginBottom: 20,
     marginTop: 20,
-    flex: 4
+    flex: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   locationText: {
-    color: '#2563eb',
-    fontWeight: '500',
-    fontSize: 14,
+    color: '#4F46E5',
+    fontWeight: '700',
+    fontSize: 20,
   },
   timeInfoBox: {
     borderWidth: 1,
@@ -222,7 +282,10 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
-    borderWidth: 1,
+    justifyContent: 'center',
+    borderWidth: 0,
+    borderColor: '#2563eb',
+    backgroundColor: '#fff',
   },
   active: {
     borderColor: '#2563eb',
@@ -230,12 +293,13 @@ const styles = StyleSheet.create({
   },
   disabled: {
     borderColor: '#ccc',
+    color: '#f3f4f6',
     backgroundColor: '#f3f4f6',
   },
   buttonText: {
     color: '#2563eb',
     fontWeight: '600',
-    fontSize: 16,
+    fontSize: 20,
   },
   modalOverlay: {
     flex: 1,

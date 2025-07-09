@@ -6,6 +6,10 @@ import MyInfo from './src/pages/MyInfo';
 import { useState, useEffect } from 'react';
 import SignIn from './src/pages/SignIn';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import Feather from 'react-native-vector-icons/Feather';
+
+
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Attendance from './src/pages/Attendance';
 import MapScreen from './src/pages/MapScreen';
@@ -20,6 +24,8 @@ import { ActivityIndicator, Alert, StatusBar, Text, View } from 'react-native';
 import userSlice from './src/slices/user';
 import Company from './src/intro/Company';
 import Project from './src/intro/Project';
+import Calendars from './src/pages/Calendars';
+import Settings from './src/pages/Settings';
 
 // 네비게이터 타입 정의
 export type RootStackParamList = {
@@ -43,7 +49,7 @@ function MainTabs() {
         <Tab.Navigator
             screenOptions={{
                 tabBarActiveTintColor: '#2563eb',
-                tabBarInactiveTintColor: '#000',
+                tabBarInactiveTintColor: '#888888',
                 headerStyle: {
                     backgroundColor: '#2563eb', // ✅ 헤더 배경색
                 },
@@ -59,7 +65,7 @@ function MainTabs() {
                 options={{
                     title: '시간표',
                     headerTitleAlign: 'center',
-                    // unmountOnBlur: true,
+                    unmountOnBlur: true,
                     tabBarIcon: ({ color }) => <MaterialIcons name="access-time" size={20} color={color} />,
                 }}
             />
@@ -73,12 +79,30 @@ function MainTabs() {
                 }}
             />
             <Tab.Screen
-                name="Settings"
+                name="MyInfo"
                 component={MyInfo}
                 options={{
                     title: '내 정보',
                     headerTitleAlign: 'center',
                     tabBarIcon: ({ color }) => <FontAwesome6 name="chalkboard-user" size={20} color={color} />,
+                }}
+            />
+            <Tab.Screen
+                name="Calendars"
+                component={Calendars}
+                options={{
+                    title: '달력',
+                    headerTitleAlign: 'center',
+                    tabBarIcon: ({ color }) => <FontAwesome name="calendar" size={20} color={color} />,
+                }}
+            />
+            <Tab.Screen
+                name="Settings"
+                component={Settings}
+                options={{
+                    title: '설정',
+                    headerTitleAlign: 'center',
+                    tabBarIcon: ({ color }) => <Feather name="settings" size={20} color={color} />,
                 }}
             />
         </Tab.Navigator>

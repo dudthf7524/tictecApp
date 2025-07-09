@@ -3,16 +3,20 @@ import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
-    TouchableOpacity,
-    Modal,
     StyleSheet,
     ScrollView,
     Alert,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather'; // 위치 아이콘
-// import { useDispatch, useSelector } from 'react-redux';
-import dayjs from 'dayjs';
-import Today from '../subPages/Today';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store/reducer';
+import Config from 'react-native-config';
+import { useAppDispatch } from '../store';
+import axios, { AxiosError } from 'axios';
+import timeSlice from '../slices/time';
+import EncryptedStorage from 'react-native-encrypted-storage';
+import userSlice from '../slices/user';
+import attendanceSlice from '../slices/attendance';
+
 // import BottomBar from '../components/BottomBar'; // 하단 네비게이션 바
 // import MyLocation from './MyLocation'; // 위치 모달 컴포넌트
 // import Today from '../components/Today';
@@ -23,22 +27,119 @@ import Today from '../subPages/Today';
 //   ATTENDANCE_UPDATE_REQUEST,
 // } from '../reducers/attendanceActions';
 
-const timeDetail = {
-    start_time: "09:00",
-    end_time: "18:00",
-    rest_start_time: "12:00",
-    rest_end_time: "13:00"
-}
+// const timeDetail = {
+//     start_time: "09:00",
+//     end_time: "18:00",
+//     rest_start_time: "12:00",
+//     rest_end_time: "13:00"
+// }
 
-const attendanceToday = {
-    attendance_start_date: "2025-07-07",
-    attendance_start_time: "09:00",
-    attendance_end_date: "2025-07-07",
-    attendance_end_time: "12:00",
-}
+// const attendanceToday = {
+//     attendance_start_date: "2025-07-07",
+//     attendance_start_time: "09:00",
+//     attendance_end_date: "2025-07-07",
+//     attendance_end_time: "12:00",
+// }
 
 const TimeTable = () => {
-    //   const dispatch = useDispatch();
+    const accessToken = useSelector((state: RootState) => state.user.accessToken);
+    const timeDetail = useSelector((state: RootState) => state.time.timeDetail);
+    const attendanceToday = useSelector((state: RootState) => state.attendance.attendanceToday);
+
+    console.log(timeDetail)
+    console.log(attendanceToday)
+
+    const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        async function getTimeDetail() {
+            try {
+                const response = await axios.get(
+                    `${Config.API_URL}/app/time/detail`,
+                    {
+                        headers: { authorization: `Bearer ${accessToken}` },
+                    },
+                );
+                dispatch(timeSlice.actions.getTime(response.data));
+            } catch (error) {
+                console.error('시간 정보 불러오기 실패:', error);
+                const errorResponse = (error as AxiosError<{ message: string }>).response;
+                console.error(errorResponse?.status)
+                if (errorResponse?.status === 419) {
+                    const token = await EncryptedStorage.getItem('refreshToken');
+                    console.log(token)
+                    if (!token) {
+                        Alert.alert('알림', '로그아웃 되었습니다.');
+                        return;
+                    }
+
+                    const response = await axios.post(
+                        `${Config.API_URL}/login/refreshToken`,
+                        {},
+                        {
+                            headers: { authorization: `Bearer ${token}` },
+                        }
+                    );
+
+                    dispatch(
+                        userSlice.actions.setUser({
+                            user_code: response.data.data.user_code,
+                            user_name: response.data.data.user_name,
+                            accessToken: response.data.data.accessToken,
+                        })
+                    );
+                }
+            }
+        }
+
+        getTimeDetail();
+    }, [accessToken, dispatch]);
+
+    useEffect(() => {
+        async function getAttendanceToday() {
+            try {
+                const response = await axios.get(
+                    `${Config.API_URL}/app/attendance/today`,
+                    {
+                        headers: { authorization: `Bearer ${accessToken}` },
+                    },
+                );
+                dispatch(attendanceSlice.actions.getAttendanceToday(response.data));
+            } catch (error) {
+                console.error('시간 정보 불러오기 실패:', error);
+                const errorResponse = (error as AxiosError<{ message: string }>).response;
+                console.error(errorResponse?.status)
+                if (errorResponse?.status === 419) {
+                    const token = await EncryptedStorage.getItem('refreshToken');
+                    console.log(token)
+                    if (!token) {
+                        Alert.alert('알림', '로그아웃 되었습니다.');
+                        return;
+                    }
+
+                    const response = await axios.post(
+                        `${Config.API_URL}/login/refreshToken`,
+                        {},
+                        {
+                            headers: { authorization: `Bearer ${token}` },
+                        }
+                    );
+
+                    dispatch(
+                        userSlice.actions.setUser({
+                            user_code: response.data.data.user_code,
+                            user_name: response.data.data.user_name,
+                            accessToken: response.data.data.accessToken,
+                        })
+                    );
+                }
+            }
+        }
+
+        getAttendanceToday();
+    }, [accessToken, dispatch]);
+
+
     const [showLocationModal, setShowLocationModal] = useState(false);
 
     //   const { timeDetail } = useSelector((state: any) => state.time);

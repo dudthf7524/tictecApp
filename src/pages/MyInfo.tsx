@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,10 +6,16 @@ import {
   Image,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { USER_DETAIL_REQUEST } from '../../reducers/user';
 import Icon from 'react-native-vector-icons/Feather';
+import axios, { AxiosError } from 'axios';
+import Config from 'react-native-config';
+import { RootState } from '../store/reducer';
+import { useAppDispatch } from '../store';
+import userSlice from '../slices/user';
+import EncryptedStorage from 'react-native-encrypted-storage';
 
 const userDetail = {
   user_name: "최영솔",
@@ -18,7 +24,37 @@ const userDetail = {
   user_hire_date: "2025-09-09"
 }
 
+
+
 const MyInfo = () => {
+  const accessToken = useSelector((state: RootState) => state.user.accessToken);
+  const dispatch = useAppDispatch();
+  const onLogout = useCallback(async () => {
+    try {
+      await axios.post(
+        `${Config.API_URL}/user/logout`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
+      Alert.alert('알림', '로그아웃 되었습니다.');
+      dispatch(
+        userSlice.actions.setUser({
+          name: '',
+          email: '',
+          accessToken: '',
+        }),
+      );
+      await EncryptedStorage.removeItem('refreshToken');
+    } catch (error) {
+      const errorResponse = (error as AxiosError).response;
+      console.error(errorResponse);
+    }
+  }, [accessToken, dispatch]);
+
   // const dispatch = useDispatch();
   // const { userDetail } = useSelector((state) => state.user);
 
@@ -42,13 +78,12 @@ const MyInfo = () => {
         </View>
 
         {/* 기능 버튼 */}
-        {/*
+
         <View style={styles.actionsContainer}>
-          <ActionButton icon="edit" label="정보 수정" onPress={() => {}} />
-          <ActionButton icon="key" label="비밀번호 변경" onPress={() => {}} />
-          <ActionButton icon="log-out" label="로그아웃" onPress={() => {}} />
+          {/* <ActionButton icon="edit" label="정보 수정" onPress={() => {}} />
+          <ActionButton icon="key" label="비밀번호 변경" onPress={() => {}} /> */}
+          <ActionButton icon="log-out" label="로그아웃" onPress={onLogout} />
         </View>
-        */}
       </ScrollView>
     </View>
   );
@@ -61,7 +96,7 @@ const InfoRow = ({ label, value }) => (
   </View>
 );
 
-const ActionButton = ({ icon, label, onPress }) => (
+const ActionButton = ({ icon , label, onPress }) => (
   <TouchableOpacity style={styles.actionButton} onPress={onPress}>
     <View style={styles.actionContent}>
       <Icon name={icon} size={20} color="#4B5563" />
@@ -71,7 +106,7 @@ const ActionButton = ({ icon, label, onPress }) => (
   </TouchableOpacity>
 );
 
-const formatDate = (dateString) => {
+const formatDate = (dateString :string) => {
   if (!dateString) return '';
   const [y, m, d] = dateString.split('-');
   return `${y}년 ${m}월 ${d}일`;
