@@ -4,14 +4,11 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Modal,
   StyleSheet,
   ScrollView,
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather'; // 위치 아이콘
-// import { useDispatch, useSelector } from 'react-redux';
-import dayjs from 'dayjs';
 import Today from '../subPages/Today';
 import { RootStackParamList } from '../../AppInner';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -23,15 +20,7 @@ import { RootState } from '../store/reducer';
 import axios, { AxiosError } from 'axios';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import userSlice from '../slices/user';
-// import BottomBar from '../components/BottomBar'; // 하단 네비게이션 바
-// import MyLocation from './MyLocation'; // 위치 모달 컴포넌트
-// import Today from '../components/Today';
-// import {
-//   TIME_DETAIL_REQUEST,
-//   ATTENDANCE_TODAY_REQUEST,
-//   ATTENDANCE_REGISTER_REQUEST,
-//   ATTENDANCE_UPDATE_REQUEST,
-// } from '../reducers/attendanceActions';
+import dayjs from 'dayjs';
 
 const timeDetail = {
   start_time: "09:00",
@@ -100,53 +89,109 @@ const Attendance = ({ navigation }: SignInScreenProps) => {
     getAttendanceToday();
   }, [accessToken, dispatch]);
 
-  //   const { timeDetail } = useSelector((state: any) => state.time);
-  //   const { attendanceToday } = useSelector((state: any) => state.attendance);
-
-  //   useEffect(() => {
-  //     dispatch({ type: TIME_DETAIL_REQUEST });
-  //     dispatch({ type: ATTENDANCE_TODAY_REQUEST });
-  //   }, []);
-
-  //   const handleCheckIn = () => {
-  //     if (!timeDetail) return Alert.alert('알림', '출근 시간이 설정되지 않았습니다.');
-  //     if (attendanceToday?.attendance_id) return Alert.alert('알림', '이미 출근 기록이 있습니다.');
-
-  //     const now = dayjs();
-  //     const attendance_start_time = now.format('HH:mm');
-  //     const attendance_start_state =
-  //       timeDetail?.start_time < attendance_start_time ? '지각' : '정상';
-
-  //     const data = {
-  //       attendance_start_date: now.format('YYYY-MM-DD'),
-  //       attendance_start_time,
-  //       attendance_start_state,
-  //       start_time: timeDetail.start_time,
-  //       rest_start_time: timeDetail.rest_start_time,
-  //       rest_end_time: timeDetail.rest_end_time,
-  //     };
-
-  //     dispatch({ type: ATTENDANCE_REGISTER_REQUEST, data });
-  //   };
-
-  //   const handleCheckOut = () => {
-  //     if (!timeDetail) return Alert.alert('알림', '퇴근 시간이 설정되지 않았습니다.');
-  //     const now = dayjs();
-  //     const data = {
-  //       attendance_id: attendanceToday?.attendance_id,
-  //       attendance_end_date: now.format('YYYY-MM-DD'),
-  //       attendance_end_time: now.format('HH:mm'),
-  //       attendance_end_state: '퇴근',
-  //     };
-  //     dispatch({ type: ATTENDANCE_UPDATE_REQUEST, data });
-  //   };
-
   const hasStarted = !!attendanceToday?.attendance_start_time;
   const hasEnded = !!attendanceToday?.attendance_end_time;
 
   const toMapScreen = () => {
     navigation.navigate('MapScreen');
   };
+
+  const attendance = async () => {
+    if (!timeDetail) {
+      Alert.alert('알림', '지정된 출근/퇴근 시간이 존재하지 않습니다.\n관리자에게 문의 해주세요.');
+      return;
+    }
+
+    if (attendanceToday?.attendance_id) {
+      Alert.alert('알림', '이미 출근 기록이 존재합니다.');
+      return;
+    }
+
+    // // if (!isWithinRadius) {
+    // //     alert('근무지 반경 외부입니다. 출근할 수 없습니다.');
+    // //     return;
+    // // }
+
+    const now = dayjs(); // 여기에 새로 선언
+    const attendance_start_date = now.format('YYYY-MM-DD');
+    const attendance_start_time = now.format('HH:mm');
+
+    var attendance_start_state = "";
+
+    if (timeDetail?.start_time < attendance_start_time) {
+      attendance_start_state = "지각";
+    } else {
+      attendance_start_state = "정상";
+    }
+
+    const data = {
+      attendance_start_date: attendance_start_date,
+      attendance_start_time: attendance_start_time,
+      attendance_start_state: attendance_start_state,
+      start_time: timeDetail.start_time,
+      rest_start_time: timeDetail.rest_start_time,
+      rest_end_time: timeDetail.rest_end_time,
+    }
+
+    try {
+      const response = await axios.post(`${Config.API_URL}/app/attendance/register`,
+        data
+        ,
+        {
+          headers: { authorization: `Bearer ${accessToken}` },
+        },
+      );
+      if (response.status === 200) {
+        Alert.alert('알림', response.data.message);
+        navigation.navigate('TimeTable')
+      }
+    } catch (error) {
+      const errorResponse = (error as AxiosError<{ message: string }>).response;
+      if (errorResponse) {
+        Alert.alert('알림', errorResponse.data.message);
+      }
+    }
+  }
+
+  const leaveWork = async () => {
+    if (!timeDetail) {
+      Alert.alert('알림', '지정된 출근/퇴근 시간이 존재하지 않습니다.\n관리자에게 문의 해주세요.');
+      return;
+    }
+
+    const now = dayjs(); // 여기에 새로 선언
+    const attendance_end_date = now.format('YYYY-MM-DD');
+    const attendance_end_time = now.format('HH:mm');
+    var attendance_end_state = "퇴근";
+
+    const data = {
+      attendance_id: attendanceToday?.attendance_id,
+      attendance_end_date: attendance_end_date,
+      attendance_end_time: attendance_end_time,
+      attendance_end_state: attendance_end_state,
+    }
+
+    try {
+      const response = await axios.post(`${Config.API_URL}/app/attendance/update`,
+        data
+        ,
+        {
+          headers: { authorization: `Bearer ${accessToken}` },
+        },
+      );
+
+      if (response.status === 200) {
+        Alert.alert('알림', response.data.message);
+        navigation.navigate('TimeTable')
+      }
+    } catch (error) {
+      const errorResponse = (error as AxiosError<{ message: string }>).response;
+      if (errorResponse) {
+        Alert.alert('알림', errorResponse.data.message);
+      }
+    }
+
+  }
 
   return (
     <View style={styles.container}>
@@ -169,7 +214,7 @@ const Attendance = ({ navigation }: SignInScreenProps) => {
               styles.actionButton,
               hasStarted && !hasEnded && styles.disabled,
             ]}
-            onPress={() => Alert.alert("출근 버튼 눌림")}
+            onPress={attendance}
           >
             <View style={{ alignItems: 'center' }}>
               <Icon name="log-in" size={28} color={hasStarted && !hasEnded ? '#9ca3af' : '#10b981'} />
@@ -183,7 +228,7 @@ const Attendance = ({ navigation }: SignInScreenProps) => {
               styles.actionButton,
               (!hasStarted || hasEnded) && styles.disabled,
             ]}
-            onPress={() => Alert.alert("퇴근 버튼 눌림")}
+            onPress={leaveWork}
           >
             <View style={{ alignItems: 'center' }}>
               <Icon name="log-out" size={28} color={!hasStarted || hasEnded ? '#9ca3af' : '#ef4444'}

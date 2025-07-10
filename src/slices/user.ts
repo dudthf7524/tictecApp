@@ -18,7 +18,11 @@ const userSlice = createSlice({
             state.user_name = action.payload.user_name;
             state.accessToken = action.payload.accessToken;
         },
+        setAccessToken(state, action) {
+            state.accessToken = action.payload
+        }
     },
+
     extraReducers: builder => { },
 });
 

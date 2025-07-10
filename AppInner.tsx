@@ -32,6 +32,7 @@ export type RootStackParamList = {
     SignIn: undefined;
     MainTabs: undefined;
     MapScreen: undefined;
+    TimeTable: undefined;
 };
 
 // export type MainTabParamList = {
@@ -60,7 +61,7 @@ function MainTabs() {
                 headerTitleAlign: 'center',
             }}>
             <Tab.Screen
-                name="Delivery"
+                name="TimeTable"
                 component={TimeTable}
                 options={{
                     title: '시간표',
@@ -75,6 +76,7 @@ function MainTabs() {
                 options={{
                     title: '출근/퇴근',
                     headerTitleAlign: 'center',
+                    unmountOnBlur: true,
                     tabBarIcon: ({ color }) => <MaterialIcons name="gps-fixed" size={20} color={color} />,
                 }}
             />
@@ -113,24 +115,55 @@ function AppInner() {
     const dispatch = useAppDispatch();
     const [isAuthLoading, setAuthLoading] = useState(true);
     const [ProjectIntro, setProjectIntro] = useState(true);
-
     const isLoggedIn = useSelector((state: RootState) => !!state.user.accessToken);
-    // const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-    const [isIntroDone, setIsIntroDone] = useState(false); // ✅ 인트로 상태
     const [introStep, setIntroStep] = useState<'company' | 'project' | 'done'>('company');
+
+    useEffect(() => {
+        axios.interceptors.response.use(
+            response => {
+                console.log(response);
+                return response;
+            },
+            async error => {
+                const { config, response: { status } } = error;
+                console.log(error)
+                if (status === 419) {
+                    if (error.response.data.code === 'expired') {
+                        const originalRequest = config;
+                        const refreshToken = await EncryptedStorage.getItem('refreshToken');
+                        if (!refreshToken) return;
+                        const { data } = await axios.post(
+                            `${Config.API_URL}/login/refreshToken`,
+                            {},
+                            {
+                                headers: { authorization: `Bearer ${refreshToken}` },
+                            }
+                        );
+                        // 토큰 재발급
+                        dispatch(userSlice.actions.setAccessToken(data.data.accessToken));
+                        // 원래 요청
+                        originalRequest.headers.authorization = `Bearer ${data.data.accessToken}`;
+                        return axios(originalRequest);
+                    }
+                }
+                // 419에러 외에는 기존읜 catch(error)로
+                return Promise.reject(error);
+            }
+        )
+    })
+
     useEffect(() => {
         if (introStep !== 'done') return;
         const getTokenAndRefresh = async () => {
             try {
-                const token = await EncryptedStorage.getItem('refreshToken');
-                if (!token) return;
+                const refreshToken = await EncryptedStorage.getItem('refreshToken');
+                if (!refreshToken) return;
 
                 const response = await axios.post(
                     `${Config.API_URL}/login/refreshToken`,
                     {},
                     {
-                        headers: { authorization: `Bearer ${token}` },
+                        headers: { authorization: `Bearer ${refreshToken}` },
                     }
                 );
 
