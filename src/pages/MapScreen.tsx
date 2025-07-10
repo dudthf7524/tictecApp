@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, PermissionsAndroid, Platform } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 type LatLng = {
   latitude: number;
@@ -62,18 +63,31 @@ const [userLocation, setUserLocation] = useState<LatLng | null>(null);
         showsUserLocation={true}
       >
         {/* 회사 위치 마커 + 반경 */}
-        <Marker coordinate={COMPANY_LOCATION} title="회사 위치" />
+        {/* <Marker coordinate={COMPANY_LOCATION} title="회사 위치" />
         <Circle
           center={COMPANY_LOCATION}
           radius={100} // 100m 반경
           strokeColor="rgba(0,0,255,0.5)"
           fillColor="rgba(0,0,255,0.2)"
-        />
+        /> */}
+
+<Marker coordinate={COMPANY_LOCATION}>
+  <FontAwesome name="building" size={30} color="blue" />
+</Marker>
+<Circle
+          center={COMPANY_LOCATION}
+          radius={100} // 100m 반경
+          strokeColor="rgba(0,0,255,0.5)"
+          fillColor="rgba(0,0,255,0.2)"
+        /> 
 
         {/* 사용자 위치 마커 + 반경 */}
         {userLocation && (
           <>
-            <Marker coordinate={userLocation} title="내 위치" pinColor="green" />
+            {/* <Marker coordinate={userLocation} title="내 위치" pinColor="green" /> */}
+            <Marker coordinate={userLocation}>
+    <FontAwesome name="user" size={30} color="green" />
+  </Marker>
             <Circle
               center={userLocation}
               radius={50}

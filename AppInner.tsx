@@ -175,7 +175,9 @@ function AppInner() {
                     })
                 );
             } catch (error) {
-                // Alert.alert('알림', '로그인 세션이 만료되었습니다.');
+                console.warn('Refresh token expired or invalid:', error);
+                await EncryptedStorage.removeItem('refreshToken'); // 만료된 토큰 삭제
+                Alert.alert('로그인 만료', '세션이 만료되어 다시 로그인해주세요.');
             } finally {
                 setTimeout(() => setAuthLoading(false), 1000);
             }
@@ -218,6 +220,7 @@ function AppInner() {
                                 component={MapScreen}
                                 options={{
                                     title: '지도',
+                                    headerBackTitleVisible: false,
                                     headerTitleAlign: 'center',
                                     headerStyle: { backgroundColor: '#2563eb' },
                                     headerTintColor: '#ffffff',
@@ -231,11 +234,11 @@ function AppInner() {
                                 component={SignIn}
                                 options={{ headerShown: false }}
                             />
-                            <RootStack.Screen
+                            {/* <RootStack.Screen
                                 name="MapScreen"
                                 component={MapScreen}
                                 options={{ title: '지도', headerTitleAlign: 'center' }}
-                            />
+                            /> */}
                         </>
                     )}
                 </RootStack.Navigator>
