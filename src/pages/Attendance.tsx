@@ -1,5 +1,4 @@
 // pages/Attendance.tsx
-import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,14 +11,10 @@ import Icon from 'react-native-vector-icons/Feather'; // 위치 아이콘
 import Today from '../subPages/Today';
 import { RootStackParamList } from '../../AppInner';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useAppDispatch } from '../store';
-import attendanceSlice from '../slices/attendance';
 import Config from 'react-native-config';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/reducer';
 import axios, { AxiosError } from 'axios';
-import EncryptedStorage from 'react-native-encrypted-storage';
-import userSlice from '../slices/user';
 import dayjs from 'dayjs';
 
 const timeDetail = {
@@ -39,55 +34,10 @@ const attendanceToday = {
 type SignInScreenProps = NativeStackScreenProps<RootStackParamList>;
 
 const Attendance = ({ navigation }: SignInScreenProps) => {
-  //   const dispatch = useDispatch();
-  const dispatch = useAppDispatch();
 
   const accessToken = useSelector((state: RootState) => state.user.accessToken);
+  const timeDetail = useSelector((state: RootState) => state.time.timeDetail);
   const attendanceToday = useSelector((state: RootState) => state.attendance.attendanceToday);
-
-  useEffect(() => {
-    async function getAttendanceToday() {
-      try {
-        const response = await axios.get(
-          `${Config.API_URL}/app/attendance/today`,
-          {
-            headers: { authorization: `Bearer ${accessToken}` },
-          },
-        );
-        dispatch(attendanceSlice.actions.getAttendanceToday(response.data));
-      } catch (error) {
-        console.error('시간 정보 불러오기 실패:', error);
-        const errorResponse = (error as AxiosError<{ message: string }>).response;
-        console.error(errorResponse?.status)
-        if (errorResponse?.status === 419) {
-          const token = await EncryptedStorage.getItem('refreshToken');
-          console.log(token)
-          if (!token) {
-            Alert.alert('알림', '로그아웃 되었습니다.');
-            return;
-          }
-
-          const response = await axios.post(
-            `${Config.API_URL}/login/refreshToken`,
-            {},
-            {
-              headers: { authorization: `Bearer ${token}` },
-            }
-          );
-
-          dispatch(
-            userSlice.actions.setUser({
-              user_code: response.data.data.user_code,
-              user_name: response.data.data.user_name,
-              accessToken: response.data.data.accessToken,
-            })
-          );
-        }
-      }
-    }
-
-    getAttendanceToday();
-  }, [accessToken, dispatch]);
 
   const hasStarted = !!attendanceToday?.attendance_start_time;
   const hasEnded = !!attendanceToday?.attendance_end_time;
@@ -190,12 +140,11 @@ const Attendance = ({ navigation }: SignInScreenProps) => {
         Alert.alert('알림', errorResponse.data.message);
       }
     }
-
   }
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <View style={styles.content}>
         <View style={styles.noticeBox}>
           <Text style={styles.noticeText}>오늘 17:00 이후 퇴근 처리됩니다. 지각 주의하세요!</Text>
         </View>
@@ -237,7 +186,7 @@ const Attendance = ({ navigation }: SignInScreenProps) => {
             </View>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </View>
     </View>
   );
 };

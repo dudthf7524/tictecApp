@@ -7,7 +7,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 const initialState = {
     user_code: '',
     user_name: '',
-    accessToken: '',
+    accessToken: '', 
 };
 const userSlice = createSlice({
     name: 'user',
@@ -20,7 +20,7 @@ const userSlice = createSlice({
         },
         setAccessToken(state, action) {
             state.accessToken = action.payload
-        }
+        },
     },
 
     extraReducers: builder => { },

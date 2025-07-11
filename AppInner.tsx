@@ -26,6 +26,7 @@ import Company from './src/intro/Company';
 import Project from './src/intro/Project';
 import Calendars from './src/pages/Calendars';
 import Settings from './src/pages/Settings';
+import VacationRegister from './src/pages/VacationRegister';
 
 // 네비게이터 타입 정의
 export type RootStackParamList = {
@@ -33,6 +34,7 @@ export type RootStackParamList = {
     MainTabs: undefined;
     MapScreen: undefined;
     TimeTable: undefined;
+    VacationRegister: undefined;
 };
 
 // export type MainTabParamList = {
@@ -52,9 +54,10 @@ function MainTabs() {
                 tabBarActiveTintColor: '#2563eb',
                 tabBarInactiveTintColor: '#888888',
                 headerStyle: {
-                    backgroundColor: '#2563eb', // ✅ 헤더 배경색
+                    backgroundColor: '#ffffff', // ✅ 헤더 배경색
                 },
-                headerTintColor: '#ffffff', // ✅ 헤더 타이틀과 아이콘 색 (뒤로가기 화살표 등)
+                headerShadowVisible: false, // iOS 15 이상 하단선 제거
+                headerTintColor: '#000', // ✅ 헤더 타이틀과 아이콘 색 (뒤로가기 화살표 등)
                 headerTitleStyle: {
                     fontWeight: 'bold',
                 },
@@ -86,6 +89,7 @@ function MainTabs() {
                 options={{
                     title: '내 정보',
                     headerTitleAlign: 'center',
+                    unmountOnBlur: true,
                     tabBarIcon: ({ color }) => <FontAwesome6 name="chalkboard-user" size={20} color={color} />,
                 }}
             />
@@ -93,7 +97,7 @@ function MainTabs() {
                 name="Calendars"
                 component={Calendars}
                 options={{
-                    title: '달력',
+                    title: '휴가',
                     headerTitleAlign: 'center',
                     tabBarIcon: ({ color }) => <FontAwesome name="calendar" size={20} color={color} />,
                 }}
@@ -114,7 +118,6 @@ function MainTabs() {
 function AppInner() {
     const dispatch = useAppDispatch();
     const [isAuthLoading, setAuthLoading] = useState(true);
-    const [ProjectIntro, setProjectIntro] = useState(true);
     const isLoggedIn = useSelector((state: RootState) => !!state.user.accessToken);
     const [introStep, setIntroStep] = useState<'company' | 'project' | 'done'>('company');
 
@@ -205,44 +208,52 @@ function AppInner() {
 
     return (
         <>
-            <StatusBar barStyle="light-content" backgroundColor="#2563eb" />
-            <NavigationContainer>
-                <RootStack.Navigator>
-                    {isLoggedIn ? (
-                        <>
-                            <RootStack.Screen
-                                name="MainTabs"
-                                component={MainTabs}
-                                options={{ headerShown: false }}
-                            />
-                            <RootStack.Screen
-                                name="MapScreen"
-                                component={MapScreen}
-                                options={{
-                                    title: '지도',
-                                    headerBackTitleVisible: false,
-                                    headerTitleAlign: 'center',
-                                    headerStyle: { backgroundColor: '#2563eb' },
-                                    headerTintColor: '#ffffff',
-                                }}
-                            />
-                        </>
-                    ) : (
-                        <>
-                            <RootStack.Screen
-                                name="SignIn"
-                                component={SignIn}
-                                options={{ headerShown: false }}
-                            />
-                            {/* <RootStack.Screen
+            <RootStack.Navigator>
+                {isLoggedIn ? (
+                    <>
+                        <RootStack.Screen
+                            name="MainTabs"
+                            component={MainTabs}
+                            options={{ headerShown: false }}
+                        />
+                        <RootStack.Screen
+                            name="MapScreen"
+                            component={MapScreen}
+                            options={{
+                                title: '지도',
+                                headerBackTitleVisible: false,
+                                headerTitleAlign: 'center',
+                                headerShadowVisible: false,
+                            }}
+                        />
+                        <RootStack.Screen
+                            name="VacationRegister"
+                            component={VacationRegister}
+                            options={{
+                                title: '휴가 등록',
+                                headerBackTitleVisible: false,
+                                headerTitleAlign: 'center',
+                                headerShadowVisible: false,
+
+                            }}
+                            
+                        />
+                    </>
+                ) : (
+                    <>
+                        <RootStack.Screen
+                            name="SignIn"
+                            component={SignIn}
+                            options={{ headerShown: false }}
+                        />
+                        {/* <RootStack.Screen
                                 name="MapScreen"
                                 component={MapScreen}
                                 options={{ title: '지도', headerTitleAlign: 'center' }}
                             /> */}
-                        </>
-                    )}
-                </RootStack.Navigator>
-            </NavigationContainer>
+                    </>
+                )}
+            </RootStack.Navigator>
         </>
     );
 }

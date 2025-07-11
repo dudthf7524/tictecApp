@@ -78,7 +78,6 @@ function SignIn({ navigation }: SignInScreenProps) {
   return (
     <DismissKeyboardView>
       <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
         <Text style={styles.title}>로그인</Text>
 
         <View style={styles.inputWrapper}>

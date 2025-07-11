@@ -1,16 +1,27 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from 'react-native-vector-icons/Feather';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../AppInner';
 
 type VacationInfo = {
   name: string;
   reason: string;
   period: string;
-  date: string; // 'YYYY-MM-DD'
+  date: string;
 };
+type SignInScreenProps = NativeStackScreenProps<RootStackParamList>;
 
-const Calendars = () => {
+const Calendars = ({ navigation }: SignInScreenProps) => {
   const vacationList: VacationInfo[] = [
     {
       name: '김철수',
@@ -19,33 +30,81 @@ const Calendars = () => {
       date: '2025-07-15',
     },
     {
-      name: '이영희',
-      reason: '개인 사정',
-      period: '2025-07-15 ~ 2025-07-15',
+      name: '김철수',
+      reason: '가족 여행',
+      period: '2025-07-15 ~ 2025-07-16',
       date: '2025-07-15',
     },
     {
-      name: '이영희',
-      reason: '개인 사정',
-      period: '2025-07-15 ~ 2025-07-15',
+      name: '김철수',
+      reason: '가족 여행',
+      period: '2025-07-15 ~ 2025-07-16',
       date: '2025-07-15',
     },
     {
-      name: '이영희',
-      reason: '개인 사정',
-      period: '2025-07-15 ~ 2025-07-15',
+      name: '김철수',
+      reason: '가족 여행',
+      period: '2025-07-15 ~ 2025-07-16',
       date: '2025-07-15',
     },
     {
-      name: '이영희',
-      reason: '개인 사정',
-      period: '2025-07-15 ~ 2025-07-15',
+      name: '김철수',
+      reason: '가족 여행',
+      period: '2025-07-15 ~ 2025-07-16',
       date: '2025-07-15',
     },
     {
-      name: '이영희',
-      reason: '개인 사정',
-      period: '2025-07-15 ~ 2025-07-15',
+      name: '김철수',
+      reason: '가족 여행',
+      period: '2025-07-15 ~ 2025-07-16',
+      date: '2025-07-15',
+    },
+    {
+      name: '김철수',
+      reason: '가족 여행',
+      period: '2025-07-15 ~ 2025-07-16',
+      date: '2025-07-15',
+    },
+    {
+      name: '김철수',
+      reason: '가족 여행',
+      period: '2025-07-15 ~ 2025-07-16',
+      date: '2025-07-15',
+    },
+    {
+      name: '김철수',
+      reason: '가족 여행',
+      period: '2025-07-15 ~ 2025-07-16',
+      date: '2025-07-15',
+    },
+    {
+      name: '김철수',
+      reason: '가족 여행',
+      period: '2025-07-15 ~ 2025-07-16',
+      date: '2025-07-15',
+    },
+    {
+      name: '김철수',
+      reason: '가족 여행',
+      period: '2025-07-15 ~ 2025-07-16',
+      date: '2025-07-15',
+    },
+    {
+      name: '김철수',
+      reason: '가족 여행',
+      period: '2025-07-15 ~ 2025-07-16',
+      date: '2025-07-15',
+    },
+    {
+      name: '김철수',
+      reason: '가족 여행',
+      period: '2025-07-15 ~ 2025-07-16',
+      date: '2025-07-15',
+    },
+    {
+      name: '김철수',
+      reason: '가족 여행',
+      period: '2025-07-15 ~ 2025-07-16',
       date: '2025-07-15',
     },
     {
@@ -63,22 +122,33 @@ const Calendars = () => {
     return acc;
   }, {} as { [key: string]: any });
 
+  if (selectedDate) {
+    markedDates[selectedDate] = {
+      ...(markedDates[selectedDate] || {}),
+      selected: true,
+      selectedColor: '#2563eb',
+    };
+  }
+
   const vacationOfDay = vacationList.filter((item) => item.date === selectedDate);
+
+  const handleRegisterPress = () => {
+    Alert.alert('휴가 등록 페이지로 이동합니다.');
+  };
+  const toVacationRegister = () => {
+    navigation.navigate('VacationRegister');
+  };
+  
 
   return (
     <ScrollView style={styles.wrapper}>
-
       <View style={styles.container}>
         <Calendar
           current={new Date().toISOString().split('T')[0]}
           onDayPress={(day) => setSelectedDate(day.dateString)}
-          markedDates={{
-            ...markedDates,
-            ...(selectedDate ? { [selectedDate]: { selected: true, selectedColor: '#2563eb' } } : {}),
-          }}
+          markedDates={markedDates}
           dayComponent={({ date, state }) => {
             const isVacation = vacationList.some((v) => v.date === date.dateString);
-
             return (
               <TouchableOpacity
                 onPress={() => setSelectedDate(date.dateString)}
@@ -115,6 +185,14 @@ const Calendars = () => {
             textDayFontWeight: '500',
           }}
         />
+
+        <TouchableOpacity style={styles.actionButton} onPress={toVacationRegister}>
+          <View style={styles.actionContent}>
+            <Icon name="plus" size={20} color="#2563eb" />
+            <Text style={[styles.actionLabel, { color: '#2563eb' }]}>휴가 등록</Text>
+          </View>
+          <Icon name="chevron-right" size={20} color="#9CA3AF" />
+        </TouchableOpacity>
 
         <View style={styles.vacationBox}>
           {selectedDate ? (
@@ -170,6 +248,27 @@ const styles = StyleSheet.create({
   },
   disabledText: {
     color: '#ccc',
+  },
+  actionButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 16,
+    marginHorizontal: 16,
+    backgroundColor: '#ffffff',
+  },
+  actionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  actionLabel: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#1F2937',
   },
   vacationBox: {
     marginTop: 16,
