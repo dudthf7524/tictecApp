@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Provider } from 'react-redux';
 import store from './src/store';
 import AppInner from './AppInner';
+import './src/i18n';
 import { StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 

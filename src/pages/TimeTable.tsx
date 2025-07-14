@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { useSelector } from 'react-redux';
@@ -13,42 +14,54 @@ import Config from 'react-native-config';
 import { RootState } from '../store/reducer';
 import timeSlice from '../slices/time';
 import attendanceSlice from '../slices/attendance';
+import { useTranslation } from 'react-i18next';
+import { useFocusEffect } from '@react-navigation/native';
 
-const TimeTable = () => {
+const TimeTable = React.memo(() => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const accessToken = useSelector((state: RootState) => state.user.accessToken);
   const timeDetail = useSelector((state: RootState) => state.time.timeDetail);
   const attendanceToday = useSelector((state: RootState) => state.attendance.attendanceToday);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function getTimeDetail() {
-      try {
-        const response = await axios.get(`${Config.API_URL}/app/time/detail`, {
-          headers: { authorization: `Bearer ${accessToken}` },
-        });
-        dispatch(timeSlice.actions.getTime(response.data));
-      } catch (error) {
-        const err = error as AxiosError;
-        console.error('시간 정보 실패:', err.response?.data || err.message);
-      }
-    }
-    getTimeDetail();
-  }, [dispatch]);
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      // 시간 정보 가져오기
+      const timeResponse = await axios.get(`${Config.API_URL}/app/time/detail`, {
+        headers: { authorization: `Bearer ${accessToken}` },
+      });
+      dispatch(timeSlice.actions.getTime(timeResponse.data));
 
-  useEffect(() => {
-    async function getAttendanceToday() {
-      try {
-        const response = await axios.get(`${Config.API_URL}/app/attendance/today`, {
-          headers: { authorization: `Bearer ${accessToken}` },
-        });
-        dispatch(attendanceSlice.actions.getAttendanceToday(response.data));
-      } catch (error) {
-        const err = error as AxiosError;
-        console.error('출근 정보 실패:', err.response?.data || err.message);
-      }
+      // 출근 정보 가져오기
+      const attendanceResponse = await axios.get(`${Config.API_URL}/app/attendance/today`, {
+        headers: { authorization: `Bearer ${accessToken}` },
+      });
+      dispatch(attendanceSlice.actions.getAttendanceToday(attendanceResponse.data));
+    } catch (error) {
+      const err = error as AxiosError;
+      console.error('데이터 로드 실패:', err.response?.data || err.message);
+    } finally {
+      setIsLoading(false);
     }
-    getAttendanceToday();
-  }, [dispatch]);
+  }, [dispatch, accessToken]);
+
+  // 탭이 포커스될 때마다 데이터 새로고침
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [fetchData])
+  );
+
+  // if (isLoading) {
+  //   return (
+  //     <View style={[styles.container, styles.loadingContainer]}>
+  //       <ActivityIndicator size="large" color="#2563eb" />
+  //       <Text style={styles.loadingText}>데이터를 불러오는 중...</Text>
+  //     </View>
+  //   );
+  // }
 
   return (
     <View style={styles.container}>
@@ -56,31 +69,31 @@ const TimeTable = () => {
 
       <View style={styles.content}>
         <View style={styles.timeInfoBox}>
-          <InfoBlock icon="calendar" title="회사 출근 시간" value={timeDetail?.start_time || '출근시간 미정'} />
-          <InfoBlock icon="calendar" title="회사 퇴근 시간" value={timeDetail?.end_time || '퇴근시간 미정'} />
+          <InfoBlock icon="calendar" title={t('companyGoToWorkTime')} value={timeDetail?.start_time || t('notSet')} />
+          <InfoBlock icon="calendar" title={t('companyLeaveWorkTime')} value={timeDetail?.end_time || t('notSet')} />
           <InfoBlock
             icon="coffee"
-            title="휴게 시간"
+            title={t('breakTime')}
             value={
               timeDetail?.rest_start_time && timeDetail?.rest_end_time
                 ? `${timeDetail.rest_start_time} ~ ${timeDetail.rest_end_time}`
-                : '휴게시간 미정'
+                : t('notSet')
             }
           />
         </View>
 
         <View style={styles.recordBox}>
-          <InfoBlock icon="log-in" iconColor="#10b981" title="출근 날짜" value={attendanceToday?.attendance_start_date || '출근 전'} />
-          <InfoBlock icon="clock" title="출근 시간" value={attendanceToday?.attendance_start_time || '출근 전'} />
-          <InfoBlock icon="log-out" iconColor="#ef4444" title="퇴근 날짜" value={attendanceToday?.attendance_end_date || '퇴근 전'} />
-          <InfoBlock icon="clock" title="퇴근 시간" value={attendanceToday?.attendance_end_time || '퇴근 전'} />
+          <InfoBlock icon="log-in" iconColor="#10b981" title={t('goToWorkDate')} value={attendanceToday?.attendance_start_date || t('beforeGoToWork')} />
+          <InfoBlock icon="clock" title={t('goToWorkTime')} value={attendanceToday?.attendance_start_time || t('beforeGoToWork')} />
+          <InfoBlock icon="log-out" iconColor="#ef4444" title={t('leaveWorkDate')} value={attendanceToday?.attendance_end_date || t('beforeGoToWork')} />
+          <InfoBlock icon="clock" title={t('leaveWorkTime')} value={attendanceToday?.attendance_end_time || t('beforeGoToWork')} />
         </View>
       </View>
     </View>
   );
-};
+});
 
-const InfoBlock = ({
+const InfoBlock = React.memo(({
   icon,
   title,
   value,
@@ -98,13 +111,22 @@ const InfoBlock = ({
     </View>
     <Text style={styles.infoValue}>{value}</Text>
   </View>
-);
+));
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
     justifyContent: 'center',
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#6b7280',
   },
   content: {
     flexGrow: 1,

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 const Today = () => {
+    const { t, i18n } = useTranslation();
     const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {
@@ -11,7 +13,7 @@ const Today = () => {
         return () => clearInterval(interval);
     }, []);
 
-    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    const days = [t('sun'), t('mon'), t('tue'), t('wed'), t('thu'), t('fri'), t('sat')];
     const year = currentTime.getFullYear();
     const month = String(currentTime.getMonth() + 1).padStart(2, '0');
     const date = String(currentTime.getDate()).padStart(2, '0');
@@ -19,14 +21,21 @@ const Today = () => {
     const hours = String(currentTime.getHours()).padStart(2, '0');
     const minutes = String(currentTime.getMinutes()).padStart(2, '0');
     const seconds = String(currentTime.getSeconds()).padStart(2, '0');
-    const formattedTime = `${hours}시 ${minutes}분 ${seconds}초`;
+    
+    const formattedDate = i18n.language === 'en' 
+        ? `${day}, ${month}/${date}/${year}` 
+        : `${year}${t('year')} ${month}${t('month')} ${date}${t('date')} (${day})`;
+
+    const formattedTime = i18n.language === 'en'
+        ? `${hours}:${minutes}:${seconds}`
+        : `${hours}${t('hour')} ${minutes}${t('minute')} ${seconds}${t('second')}`;
 
     return (
         <View style={styles.container}>
             <Text style={styles.dateText}>
-                {year}년 {month}월 {date}일 ({day})
+                {formattedDate}
             </Text>
-            <Text style={styles.subText}>현재 시간</Text>
+            <Text style={styles.subText}>{t('currentTime')}</Text>
             <Text style={styles.timeText}>{formattedTime}</Text>
         </View>
     );

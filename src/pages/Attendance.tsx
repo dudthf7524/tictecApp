@@ -1,4 +1,5 @@
 // pages/Attendance.tsx
+import React from 'react';
 import {
   View,
   Text,
@@ -16,25 +17,12 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../store/reducer';
 import axios, { AxiosError } from 'axios';
 import dayjs from 'dayjs';
-
-const timeDetail = {
-  start_time: "09:00",
-  end_time: "18:00",
-  rest_start_time: "12:00",
-  rest_end_time: "13:00"
-}
-
-const attendanceToday = {
-  attendance_start_date: "2025-07-07",
-  attendance_start_time: "09:00",
-  attendance_end_date: "2025-07-07",
-  attendance_end_time: "09:00",
-}
+import { useTranslation } from 'react-i18next';
 
 type SignInScreenProps = NativeStackScreenProps<RootStackParamList>;
 
-const Attendance = ({ navigation }: SignInScreenProps) => {
-
+const Attendance = React.memo(({ navigation }: SignInScreenProps) => {
+  const { t } = useTranslation();
   const accessToken = useSelector((state: RootState) => state.user.accessToken);
   const timeDetail = useSelector((state: RootState) => state.time.timeDetail);
   const attendanceToday = useSelector((state: RootState) => state.attendance.attendanceToday);
@@ -48,21 +36,16 @@ const Attendance = ({ navigation }: SignInScreenProps) => {
 
   const attendance = async () => {
     if (!timeDetail) {
-      Alert.alert('알림', '지정된 출근/퇴근 시간이 존재하지 않습니다.\n관리자에게 문의 해주세요.');
+      Alert.alert(t('alert'), t('noTimeInfo'));
       return;
     }
 
     if (attendanceToday?.attendance_id) {
-      Alert.alert('알림', '이미 출근 기록이 존재합니다.');
+      Alert.alert(t('alert'), t('alreadyGoToWork'));
       return;
     }
 
-    // // if (!isWithinRadius) {
-    // //     alert('근무지 반경 외부입니다. 출근할 수 없습니다.');
-    // //     return;
-    // // }
-
-    const now = dayjs(); // 여기에 새로 선언
+    const now = dayjs();
     const attendance_start_date = now.format('YYYY-MM-DD');
     const attendance_start_time = now.format('HH:mm');
 
@@ -92,24 +75,24 @@ const Attendance = ({ navigation }: SignInScreenProps) => {
         },
       );
       if (response.status === 200) {
-        Alert.alert('알림', response.data.message);
+        Alert.alert(t('alert'), response.data.message);
         navigation.navigate('TimeTable')
       }
     } catch (error) {
       const errorResponse = (error as AxiosError<{ message: string }>).response;
       if (errorResponse) {
-        Alert.alert('알림', errorResponse.data.message);
+        Alert.alert(t('alert'), errorResponse.data.message);
       }
     }
   }
 
   const leaveWork = async () => {
     if (!timeDetail) {
-      Alert.alert('알림', '지정된 출근/퇴근 시간이 존재하지 않습니다.\n관리자에게 문의 해주세요.');
+      Alert.alert(t('alert'), t('noTimeInfo'));
       return;
     }
 
-    const now = dayjs(); // 여기에 새로 선언
+    const now = dayjs();
     const attendance_end_date = now.format('YYYY-MM-DD');
     const attendance_end_time = now.format('HH:mm');
     var attendance_end_state = "퇴근";
@@ -131,13 +114,13 @@ const Attendance = ({ navigation }: SignInScreenProps) => {
       );
 
       if (response.status === 200) {
-        Alert.alert('알림', response.data.message);
+        Alert.alert(t('alert'), response.data.message);
         navigation.navigate('TimeTable')
       }
     } catch (error) {
       const errorResponse = (error as AxiosError<{ message: string }>).response;
       if (errorResponse) {
-        Alert.alert('알림', errorResponse.data.message);
+        Alert.alert(t('alert'), errorResponse.data.message);
       }
     }
   }
@@ -146,7 +129,7 @@ const Attendance = ({ navigation }: SignInScreenProps) => {
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.noticeBox}>
-          <Text style={styles.noticeText}>오늘 17:00 이후 퇴근 처리됩니다. 지각 주의하세요!</Text>
+          <Text style={styles.noticeText}>{t('notice')}</Text>
         </View>
 
         <Today />
@@ -167,7 +150,7 @@ const Attendance = ({ navigation }: SignInScreenProps) => {
           >
             <View style={{ alignItems: 'center' }}>
               <Icon name="log-in" size={28} color={hasStarted && !hasEnded ? '#9ca3af' : '#10b981'} />
-              <Text style={[styles.buttonText, { color: hasStarted && !hasEnded ? '#9ca3af' : '#10b981' }]}>출근</Text>
+              <Text style={[styles.buttonText, { color: hasStarted && !hasEnded ? '#9ca3af' : '#10b981' }]}>{t('goToWork')}</Text>
             </View>
           </TouchableOpacity>
 
@@ -182,21 +165,14 @@ const Attendance = ({ navigation }: SignInScreenProps) => {
             <View style={{ alignItems: 'center' }}>
               <Icon name="log-out" size={28} color={!hasStarted || hasEnded ? '#9ca3af' : '#ef4444'}
               />
-              <Text style={[styles.buttonText, { color: !hasStarted || hasEnded ? '#9ca3af' : '#ef4444' },]}>퇴근</Text>
+              <Text style={[styles.buttonText, { color: !hasStarted || hasEnded ? '#9ca3af' : '#ef4444' },]}>{t('leaveWork')}</Text>
             </View>
           </TouchableOpacity>
         </View>
       </View>
     </View>
   );
-};
-
-// const InfoBlock = ({ title, value }: { title: string; value: string }) => (
-//   <View style={{ marginBottom: 12 }}>
-//     <Text style={styles.infoTitle}>{title}</Text>
-//     <Text style={styles.infoValue}>{value}</Text>
-//   </View>
-// );
+});
 
 const styles = StyleSheet.create({
   container: {

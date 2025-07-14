@@ -15,8 +15,13 @@ import axios, { AxiosError } from 'axios';
 import Config from 'react-native-config';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/reducer';
+import { useTranslation } from 'react-i18next';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../AppInner';
 
-const VacationRegister = () => {
+type SignInScreenProps = NativeStackScreenProps<RootStackParamList>;
+const VacationRegister = ({ navigation }: SignInScreenProps) => {
+    const { t } = useTranslation();
     const accessToken = useSelector((state: RootState) => state.user.accessToken);
 
     const [form, setForm] = useState({
@@ -62,13 +67,13 @@ const VacationRegister = () => {
     const handleRegister = useCallback(async () => {
 
         if (!form.startDate || !form.startDate.trim()) {
-            return Alert.alert('알림', '시작일을 입력해주세요.');
+            return Alert.alert(t('alert'), t('startDateRequired'));
         }
         if (!form.endDate || !form.endDate.trim()) {
-            return Alert.alert('알림', '종료일을 입력해주세요.');
+            return Alert.alert(t('alert'), t('endDateRequired'));
         }
         if (!form.reason || !form.reason.trim()) {
-            return Alert.alert('알림', '사유를 입력해주세요.');
+            return Alert.alert(t('alert'), t('reasonRequired'));
         }
         
         try {
@@ -83,47 +88,48 @@ const VacationRegister = () => {
                 }
             );
             if(response.data){
-                Alert.alert('알림', '휴가 등록이 완료되었습니다.');
+                Alert.alert(t('alert'), t('vacationRegistrationComplete'));
+                navigation.navigate('Calendars')
             }
 
         } catch (error) {
             const errorResponse = (error as AxiosError<{ message: string }>).response;
             if (errorResponse) {
-                Alert.alert('알림', errorResponse.data.message);
+                Alert.alert(t('alert'), errorResponse.data.message);
             }
         } finally {
 
         }
-    }, [form.startDate, form.endDate, form.reason]);
+    }, [form.startDate, form.endDate, form.reason, t]);
 
     return (
         <View style={styles.container}>
             {/* 시작일 */}
             <View style={[styles.section, { flex: 1 }]}>
-                <Text style={styles.label}>시작일</Text>
+                <Text style={styles.label}>{t('startDate')}</Text>
                 <TouchableOpacity style={styles.input} onPress={() => showDatePicker('start')}>
                     <Text style={!form.startDate ? styles.placeholderText : styles.filledText}>
-                        {form.startDate || '시작일 선택'}
+                        {form.startDate || t('selectStartDate')}
                     </Text>
                 </TouchableOpacity>
             </View>
 
             {/* 종료일 */}
             <View style={[styles.section, { flex: 1 }]}>
-                <Text style={styles.label}>종료일</Text>
+                <Text style={styles.label}>{t('endDate')}</Text>
                 <TouchableOpacity style={styles.input} onPress={() => showDatePicker('end')}>
                     <Text style={!form.endDate ? styles.placeholderText : styles.filledText}>
-                        {form.endDate || '종료일 선택'}
+                        {form.endDate || t('selectEndDate')}
                     </Text>
                 </TouchableOpacity>
             </View>
 
             {/* 사유 */}
             <View style={[styles.section, { flex: 6 }]}>
-                <Text style={styles.label}>사유</Text>
+                <Text style={styles.label}>{t('reason')}</Text>
                 <TextInput
                     style={[styles.input, styles.textArea]}
-                    placeholder="사유를 입력해주세요"
+                    placeholder={t('enterReason')}
                     placeholderTextColor="#9ca3af"
                     value={form.reason}
                     onChangeText={(text) => setForm((prev) => ({ ...prev, reason: text }))}
@@ -147,7 +153,7 @@ const VacationRegister = () => {
                 <TouchableOpacity style={styles.actionButton} onPress={handleRegister}>
                     <View style={styles.actionContent}>
                         <Icon name="check-circle" size={20} color="#2563eb" />
-                        <Text style={styles.actionLabel}>휴가 등록</Text>
+                        <Text style={styles.actionLabel}>{t('vacationRegister')}</Text>
                     </View>
                     <Icon name="chevron-right" size={20} color="#9CA3AF" />
                 </TouchableOpacity>

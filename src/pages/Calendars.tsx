@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,119 +6,73 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Icon from 'react-native-vector-icons/Feather';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../AppInner';
+import { useAppDispatch } from '../store';
+import Config from 'react-native-config';
+import axios, { AxiosError } from 'axios';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store/reducer';
+import vacationSlice from '../slices/vacation';
+import { useTranslation } from 'react-i18next';
+import { useFocusEffect } from '@react-navigation/native';
 
-type VacationInfo = {
-  name: string;
-  reason: string;
-  period: string;
-  date: string;
-};
+
 type SignInScreenProps = NativeStackScreenProps<RootStackParamList>;
 
-const Calendars = ({ navigation }: SignInScreenProps) => {
-  const vacationList: VacationInfo[] = [
-    {
-      name: '김철수',
-      reason: '가족 여행',
-      period: '2025-07-15 ~ 2025-07-16',
-      date: '2025-07-15',
-    },
-    {
-      name: '김철수',
-      reason: '가족 여행',
-      period: '2025-07-15 ~ 2025-07-16',
-      date: '2025-07-15',
-    },
-    {
-      name: '김철수',
-      reason: '가족 여행',
-      period: '2025-07-15 ~ 2025-07-16',
-      date: '2025-07-15',
-    },
-    {
-      name: '김철수',
-      reason: '가족 여행',
-      period: '2025-07-15 ~ 2025-07-16',
-      date: '2025-07-15',
-    },
-    {
-      name: '김철수',
-      reason: '가족 여행',
-      period: '2025-07-15 ~ 2025-07-16',
-      date: '2025-07-15',
-    },
-    {
-      name: '김철수',
-      reason: '가족 여행',
-      period: '2025-07-15 ~ 2025-07-16',
-      date: '2025-07-15',
-    },
-    {
-      name: '김철수',
-      reason: '가족 여행',
-      period: '2025-07-15 ~ 2025-07-16',
-      date: '2025-07-15',
-    },
-    {
-      name: '김철수',
-      reason: '가족 여행',
-      period: '2025-07-15 ~ 2025-07-16',
-      date: '2025-07-15',
-    },
-    {
-      name: '김철수',
-      reason: '가족 여행',
-      period: '2025-07-15 ~ 2025-07-16',
-      date: '2025-07-15',
-    },
-    {
-      name: '김철수',
-      reason: '가족 여행',
-      period: '2025-07-15 ~ 2025-07-16',
-      date: '2025-07-15',
-    },
-    {
-      name: '김철수',
-      reason: '가족 여행',
-      period: '2025-07-15 ~ 2025-07-16',
-      date: '2025-07-15',
-    },
-    {
-      name: '김철수',
-      reason: '가족 여행',
-      period: '2025-07-15 ~ 2025-07-16',
-      date: '2025-07-15',
-    },
-    {
-      name: '김철수',
-      reason: '가족 여행',
-      period: '2025-07-15 ~ 2025-07-16',
-      date: '2025-07-15',
-    },
-    {
-      name: '김철수',
-      reason: '가족 여행',
-      period: '2025-07-15 ~ 2025-07-16',
-      date: '2025-07-15',
-    },
-    {
-      name: '박지민',
-      reason: '휴식',
-      period: '2025-07-22 ~ 2025-07-22',
-      date: '2025-07-22',
-    },
-  ];
+const Calendars = React.memo(({ navigation }: SignInScreenProps) => {
+  const { t } = useTranslation();
+  const dispatch = useAppDispatch();
+  const accessToken = useSelector((state: RootState) => state.user.accessToken);
+  const vacationLists = useSelector((state: RootState) => state.vacation.vacationList);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  const markedDates = vacationList.reduce((acc, cur) => {
-    acc[cur.date] = { marked: true, dotColor: '#1abc9c' };
+  const getVacationStateText = (state: number) => {
+    switch (state) {
+      case 0:
+        return t('requested');
+      case 1:
+        return t('approved');
+      case -1:
+        return t('rejected');
+      default:
+        return '';
+    }
+  };
+
+  const getVacationStateColor = (state: number) => {
+    switch (state) {
+      case 1:
+        return '#10B981'; // 초록색 (승인)
+      case 0:
+        return '#6B7280'; // 회색 (요청됨)
+      case -1:
+        return '#EF4444'; // 빨간색 (거절됨)
+      default:
+        return '#6B7280';
+    }
+  };
+
+  const getVacationDotColor = (dateString: string) => {
+    const vacation = vacationLists.find(v => v.start_date === dateString);
+    if (vacation) {
+      return getVacationStateColor(vacation.vacation_state);
+    }
+    return '#1abc9c'; // 기본 색상
+  };
+
+  const markedDates = vacationLists.reduce((acc, cur) => {
+    acc[cur.start_date] = { 
+      marked: true, 
+      dotColor: getVacationStateColor(cur.vacation_state)
+    };
     return acc;
   }, {} as { [key: string]: any });
 
@@ -130,15 +84,42 @@ const Calendars = ({ navigation }: SignInScreenProps) => {
     };
   }
 
-  const vacationOfDay = vacationList.filter((item) => item.date === selectedDate);
+  const vacationOfDay = vacationLists.filter((item) => item.start_date === selectedDate);
 
-  const handleRegisterPress = () => {
-    Alert.alert('휴가 등록 페이지로 이동합니다.');
-  };
   const toVacationRegister = () => {
     navigation.navigate('VacationRegister');
   };
-  
+
+  const fetchVacationData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get(`${Config.API_URL}/app/vacation/list`, {
+        headers: { authorization: `Bearer ${accessToken}` },
+      });
+      dispatch(vacationSlice.actions.getVacation(response.data));
+    } catch (error) {
+      const err = error as AxiosError;
+      console.error('휴가 정보 실패:', err.response?.data || err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [dispatch, accessToken]);
+
+  // 탭이 포커스될 때마다 휴가 데이터 새로고침
+  useFocusEffect(
+    useCallback(() => {
+      fetchVacationData();
+    }, [fetchVacationData])
+  );
+
+  // if (isLoading) {
+  //   return (
+  //     <View style={[styles.wrapper, styles.loadingContainer]}>
+  //       <ActivityIndicator size="large" color="#2563eb" />
+  //       <Text style={styles.loadingText}>휴가 정보를 불러오는 중...</Text>
+  //     </View>
+  //   );
+  // }
 
   return (
     <ScrollView style={styles.wrapper}>
@@ -148,7 +129,7 @@ const Calendars = ({ navigation }: SignInScreenProps) => {
           onDayPress={(day) => setSelectedDate(day.dateString)}
           markedDates={markedDates}
           dayComponent={({ date, state }) => {
-            const isVacation = vacationList.some((v) => v.date === date.dateString);
+            const isVacation = vacationLists.some((v) => v.start_date === date.dateString);
             return (
               <TouchableOpacity
                 onPress={() => setSelectedDate(date.dateString)}
@@ -189,7 +170,7 @@ const Calendars = ({ navigation }: SignInScreenProps) => {
         <TouchableOpacity style={styles.actionButton} onPress={toVacationRegister}>
           <View style={styles.actionContent}>
             <Icon name="plus" size={20} color="#2563eb" />
-            <Text style={[styles.actionLabel, { color: '#2563eb' }]}>휴가 등록</Text>
+            <Text style={[styles.actionLabel, { color: '#2563eb' }]}>{t('vacationRegister')}</Text>
           </View>
           <Icon name="chevron-right" size={20} color="#9CA3AF" />
         </TouchableOpacity>
@@ -199,32 +180,47 @@ const Calendars = ({ navigation }: SignInScreenProps) => {
             vacationOfDay.length > 0 ? (
               <>
                 <Text style={styles.vacationTitle}>
-                  ✈️ {selectedDate} 휴가자 목록
+                  ✈️ {selectedDate} {t('vacationApprovalStatus')}
                 </Text>
                 {vacationOfDay.map((item, index) => (
                   <View key={index} style={styles.vacationItem}>
-                    <Text style={styles.vacationName}>👤 {item.name}</Text>
-                    <Text style={styles.vacationPeriod}>📅 {item.period}</Text>
+                    <Text style={styles.vacationName}>👤 {item.user.user_name}</Text>
+                    <Text style={styles.vacationPeriod}>📅 {item.start_date} ~ {item.end_date}</Text>
                     <Text style={styles.vacationReason}>📝 {item.reason}</Text>
+                    <Text style={[
+                      styles.vacationState,
+                      { color: getVacationStateColor(item.vacation_state) }
+                    ]}>
+                      상태: {getVacationStateText(item.vacation_state)}
+                    </Text>
                   </View>
                 ))}
               </>
             ) : (
-              <Text style={styles.noVacation}>선택한 날짜에 휴가자가 없습니다.</Text>
+              <Text style={styles.noVacation}>{t('noVacationerOnSelectedDate')}</Text>
             )
           ) : (
-            <Text style={styles.noVacation}>날짜를 선택하면 휴가 정보를 볼 수 있어요.</Text>
+            <Text style={styles.noVacation}>{t('selectDateForVacationInfo')}</Text>
           )}
         </View>
       </View>
     </ScrollView>
   );
-};
+});
 
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#6b7280',
   },
   container: {
     margin: 16,
@@ -304,6 +300,11 @@ const styles = StyleSheet.create({
   vacationReason: {
     fontSize: 13,
     color: '#6b7280',
+  },
+  vacationState: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    marginTop: 4,
   },
   noVacation: {
     color: '#6b7280',

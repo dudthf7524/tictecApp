@@ -8,8 +8,6 @@ import SignIn from './src/pages/SignIn';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
-
-
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Attendance from './src/pages/Attendance';
 import MapScreen from './src/pages/MapScreen';
@@ -27,6 +25,7 @@ import Project from './src/intro/Project';
 import Calendars from './src/pages/Calendars';
 import Settings from './src/pages/Settings';
 import VacationRegister from './src/pages/VacationRegister';
+import { useTranslation } from 'react-i18next';
 
 // 네비게이터 타입 정의
 export type RootStackParamList = {
@@ -35,41 +34,56 @@ export type RootStackParamList = {
     MapScreen: undefined;
     TimeTable: undefined;
     VacationRegister: undefined;
+    Calendars:undefined;
 };
-
-// export type MainTabParamList = {
-//     TimeTable: undefined;
-//     Attendance: undefined;
-//     Settings: undefined;
-//     MapScreen: { lat: number; lng: number }; // 예: 지도에 좌표 전달
-// };
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
 
 function MainTabs() {
+    const { t } = useTranslation();
     return (
         <Tab.Navigator
             screenOptions={{
                 tabBarActiveTintColor: '#2563eb',
                 tabBarInactiveTintColor: '#888888',
                 headerStyle: {
-                    backgroundColor: '#ffffff', // ✅ 헤더 배경색
+                    backgroundColor: '#ffffff',
                 },
-                headerShadowVisible: false, // iOS 15 이상 하단선 제거
-                headerTintColor: '#000', // ✅ 헤더 타이틀과 아이콘 색 (뒤로가기 화살표 등)
+                headerShadowVisible: false,
+                headerTintColor: '#000',
                 headerTitleStyle: {
                     fontWeight: 'bold',
                 },
                 headerTitleAlign: 'center',
+                // 언마운트 비활성화로 부드러운 전환
+                unmountOnBlur: false,
+                // 부드러운 전환을 위한 애니메이션 설정
+                tabBarStyle: {
+                    backgroundColor: '#ffffff',
+                    borderTopWidth: 1,
+                    borderTopColor: '#e5e7eb',
+                    elevation: 8,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: -2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                },
+                // 탭 전환 애니메이션 개선
+                tabBarHideOnKeyboard: true,
+                tabBarShowLabel: true,
+                tabBarLabelStyle: {
+                    fontSize: 12,
+                    fontWeight: '500',
+                },
             }}>
             <Tab.Screen
                 name="TimeTable"
                 component={TimeTable}
                 options={{
-                    title: '시간표',
+                    title: t('timeTable'),
                     headerTitleAlign: 'center',
-                    unmountOnBlur: true,
+                    unmountOnBlur: false,
                     tabBarIcon: ({ color }) => <MaterialIcons name="access-time" size={20} color={color} />,
                 }}
             />
@@ -77,9 +91,9 @@ function MainTabs() {
                 name="Attendance"
                 component={Attendance}
                 options={{
-                    title: '출근/퇴근',
+                    title: t('attendance'),
                     headerTitleAlign: 'center',
-                    unmountOnBlur: true,
+                    unmountOnBlur: false,
                     tabBarIcon: ({ color }) => <MaterialIcons name="gps-fixed" size={20} color={color} />,
                 }}
             />
@@ -87,9 +101,9 @@ function MainTabs() {
                 name="MyInfo"
                 component={MyInfo}
                 options={{
-                    title: '내 정보',
+                    title: t('myInfo'),
                     headerTitleAlign: 'center',
-                    unmountOnBlur: true,
+                    unmountOnBlur: false,
                     tabBarIcon: ({ color }) => <FontAwesome6 name="chalkboard-user" size={20} color={color} />,
                 }}
             />
@@ -97,8 +111,9 @@ function MainTabs() {
                 name="Calendars"
                 component={Calendars}
                 options={{
-                    title: '휴가',
+                    title: t('vacation'),
                     headerTitleAlign: 'center',
+                    unmountOnBlur: false,
                     tabBarIcon: ({ color }) => <FontAwesome name="calendar" size={20} color={color} />,
                 }}
             />
@@ -106,8 +121,9 @@ function MainTabs() {
                 name="Settings"
                 component={Settings}
                 options={{
-                    title: '설정',
+                    title: t('settings'),
                     headerTitleAlign: 'center',
+                    unmountOnBlur: false,
                     tabBarIcon: ({ color }) => <Feather name="settings" size={20} color={color} />,
                 }}
             />
@@ -116,6 +132,7 @@ function MainTabs() {
 }
 
 function AppInner() {
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const [isAuthLoading, setAuthLoading] = useState(true);
     const isLoggedIn = useSelector((state: RootState) => !!state.user.accessToken);
@@ -151,9 +168,13 @@ function AppInner() {
                 }
                 // 419에러 외에는 기존읜 catch(error)로
                 return Promise.reject(error);
-            }
-        )
-    })
+            },
+        );
+
+        // return () => {
+        //     axios.interceptors.response.eject(interceptor);
+        //   };
+    }, [dispatch]);
 
     useEffect(() => {
         if (introStep !== 'done') return;
@@ -220,7 +241,7 @@ function AppInner() {
                             name="MapScreen"
                             component={MapScreen}
                             options={{
-                                title: '지도',
+                                title: t('map'),
                                 headerBackTitleVisible: false,
                                 headerTitleAlign: 'center',
                                 headerShadowVisible: false,
@@ -230,7 +251,7 @@ function AppInner() {
                             name="VacationRegister"
                             component={VacationRegister}
                             options={{
-                                title: '휴가 등록',
+                                title: t('vacationRegister'),
                                 headerBackTitleVisible: false,
                                 headerTitleAlign: 'center',
                                 headerShadowVisible: false,

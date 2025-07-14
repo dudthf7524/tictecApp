@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/reducer';
@@ -16,60 +17,88 @@ import Icon from 'react-native-vector-icons/Feather';
 import userInfoSlice from '../slices/userInfo';
 import userSlice from '../slices/user';
 import EncryptedStorage from 'react-native-encrypted-storage';
+import { useTranslation } from 'react-i18next';
+import { useFocusEffect } from '@react-navigation/native';
 
-const MyInfo = () => {
+const MyInfo = React.memo(() => {
+  const { t, i18n } = useTranslation();
   const dispatch = useAppDispatch();
   const accessToken = useSelector((state: RootState) => state.user.accessToken);
   const userDetail = useSelector((state: RootState) => state.userInfo.userDetail);
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function getUserInformation() {
-      try {
-        const response = await axios.get(`${Config.API_URL}/app/user/detail`, {
-          headers: { authorization: `Bearer ${accessToken}` },
-        });
-        const { user_code, user_name, user_nickname, user_hire_date, user_position } = response.data;
-        dispatch(userInfoSlice.actions.getUserInformation({
-          user_code,
-          user_name,
-          user_nickname,
-          user_hire_date,
-          user_position
-        }));
-      } catch (error) {
-        const err = error as AxiosError;
-        console.error('직원 정보 실패:', err.response?.data || err.message);
-      }
+  const fetchUserData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get(`${Config.API_URL}/app/user/detail`, {
+        headers: { authorization: `Bearer ${accessToken}` },
+      });
+      const { user_code, user_name, user_nickname, user_hire_date, user_position } = response.data;
+      dispatch(userInfoSlice.actions.getUserInformation({
+        user_code,
+        user_name,
+        user_nickname,
+        user_hire_date,
+        user_position
+      }));
+    } catch (error) {
+      const err = error as AxiosError;
+      console.error(t('employeeInfoFailed'), err.response?.data || err.message);
+    } finally {
+      setIsLoading(false);
     }
+  }, [dispatch, accessToken, t]);
 
-    getUserInformation();
-  }, [dispatch]);
+  // 탭이 포커스될 때마다 사용자 정보 새로고침
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserData();
+    }, [fetchUserData])
+  );
 
   const onLogout = useCallback(async () => {
     try {
       await axios.post(`${Config.API_URL}/user/logout`, {}, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
-      Alert.alert('알림', '로그아웃 되었습니다.');
+      Alert.alert(t('alert'), t('logoutSuccess'));
       dispatch(userSlice.actions.setUser({ name: '', email: '', accessToken: '' }));
+      // @ts-ignore
       await EncryptedStorage.removeItem('refreshToken');
     } catch (error) {
       const err = error as AxiosError;
       console.error(err.response?.data || err.message);
     }
-  }, [accessToken, dispatch]);
+  }, [accessToken, dispatch, t]);
 
   const handleSelectLanguage = (lang: string) => {
-    Alert.alert('언어 선택', `${lang}로 변경됩니다.`);
+    const languageMap: { [key: string]: string } = {
+      [t('korean')]: 'ko',
+      [t('english')]: 'en', 
+      [t('japanese')]: 'ja'
+    };
+    
+    const languageCode = languageMap[lang] || 'ko';
+    i18n.changeLanguage(languageCode);
+    Alert.alert(t('languageSelection'), t('languageChangeConfirm', { lang }));
     setLanguageModalVisible(false);
   };
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
     const [y, m, d] = dateString.split('-');
-    return `${y}년 ${m}월 ${d}일`;
+    return `${y}${t('year')} ${m}${t('month')} ${d}${t('date')}`;
   };
+
+  // if (isLoading) {
+  //   return (
+  //     <View style={[styles.container, styles.loadingContainer]}>
+  //       <ActivityIndicator size="large" color="#2563eb" />
+  //       <Text style={styles.loadingText}>사용자 정보를 불러오는 중...</Text>
+  //     </View>
+  //   );
+  // }
 
   return (
     <View style={styles.container}>
@@ -78,38 +107,38 @@ const MyInfo = () => {
           <View style={styles.infoRow}>
             <View style={styles.iconLabel}>
               <Icon name="user" size={16} color="#6B7280" style={{ marginRight: 6 }} />
-              <Text style={styles.infoLabel}>이름</Text>
+              <Text style={styles.infoLabel}>{t('name')}</Text>
             </View>
             <Text style={styles.infoValue}>{userDetail?.user_name}</Text>
           </View>
           <View style={styles.infoRow}>
             <View style={styles.iconLabel}>
               <Icon name="smile" size={16} color="#6B7280" style={{ marginRight: 6 }} />
-              <Text style={styles.infoLabel}>닉네임</Text>
+              <Text style={styles.infoLabel}>{t('nickname')}</Text>
             </View>
             <Text style={styles.infoValue}>{userDetail?.user_nickname}</Text>
           </View>
           <View style={styles.infoRow}>
             <View style={styles.iconLabel}>
               <Icon name="briefcase" size={16} color="#6B7280" style={{ marginRight: 6 }} />
-              <Text style={styles.infoLabel}>직책</Text>
+              <Text style={styles.infoLabel}>{t('position')}</Text>
             </View>
             <Text style={styles.infoValue}>{userDetail?.user_position}</Text>
           </View>
           <View style={styles.infoRow}>
             <View style={styles.iconLabel}>
               <Icon name="calendar" size={16} color="#6B7280" style={{ marginRight: 6 }} />
-              <Text style={styles.infoLabel}>입사일</Text>
+              <Text style={styles.infoLabel}>{t('hireDate')}</Text>
             </View>
             <Text style={styles.infoValue}>{formatDate(userDetail?.user_hire_date ?? '')}</Text>
           </View>
         </View>
 
-        <View style={styles.actionsContainer}>
+        {/* <View style={styles.actionsContainer}>
           <TouchableOpacity style={styles.actionButton} onPress={onLogout}>
             <View style={styles.actionContent}>
               <Icon name="log-out" size={20} color="#4B5563" />
-              <Text style={styles.actionLabel}>로그아웃</Text>
+              <Text style={styles.actionLabel}>{t('logout')}</Text>
             </View>
             <Icon name="chevron-right" size={20} color="#9CA3AF" />
           </TouchableOpacity>
@@ -117,36 +146,27 @@ const MyInfo = () => {
           <TouchableOpacity style={styles.actionButton} onPress={() => setLanguageModalVisible(true)}>
             <View style={styles.actionContent}>
               <Icon name="globe" size={20} color="#4B5563" />
-              <Text style={styles.actionLabel}>언어 설정</Text>
+              <Text style={styles.actionLabel}>{t('languageSettings')}</Text>
             </View>
             <Icon name="chevron-right" size={20} color="#9CA3AF" />
           </TouchableOpacity>
-        </View>
-
-        <Modal
-          transparent
-          visible={languageModalVisible}
-          animationType="slide"
-          onRequestClose={() => setLanguageModalVisible(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalBox}>
-              <Text style={styles.modalTitle}>언어를 선택하세요</Text>
-              {['한국어', 'English', '日本語'].map(lang => (
-                <TouchableOpacity key={lang} onPress={() => handleSelectLanguage(lang)} style={styles.modalOption}>
-                  <Text style={styles.modalOptionText}>{lang}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        </Modal>
+        </View> */}
       </View>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center' },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#6b7280',
+  },
   contentContainer: { padding: 20, flexGrow: 1, justifyContent: 'center' },
   infoContainer: {
     borderWidth: 1,

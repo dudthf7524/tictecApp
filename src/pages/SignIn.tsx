@@ -2,11 +2,12 @@ import React, { useCallback, useRef, useState } from 'react';
 import {
   Alert,
   Pressable,
-  StatusBar,
   StyleSheet,
   Text,
   TextInput,
   View,
+  Modal,
+  TouchableOpacity,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import EncryptedStorage from 'react-native-encrypted-storage';
@@ -16,15 +17,29 @@ import axios, { AxiosError } from 'axios';
 import Config from 'react-native-config';
 import { useAppDispatch } from '../store';
 import userSlice from '../slices/user';
+import { useTranslation } from 'react-i18next';
 
 type SignInScreenProps = NativeStackScreenProps<RootStackParamList, 'SignIn'>;
 
 function SignIn({ navigation }: SignInScreenProps) {
+  const { t, i18n } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
   const dispatch = useAppDispatch();
   const emailRef = useRef<TextInput | null>(null);
   const passwordRef = useRef<TextInput | null>(null);
+
+  const languages = [
+    { code: 'ko', label: '한국어' },
+    { code: 'en', label: 'English' },
+    { code: 'ja', label: '日本語' },
+  ];
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+    setModalVisible(false);
+  };
 
   const onChangeEmail = useCallback((text: string) => {
     setEmail(text.trim());
@@ -35,10 +50,10 @@ function SignIn({ navigation }: SignInScreenProps) {
 
   const onSubmit = useCallback(async () => {
     if (!email) {
-      return Alert.alert('알림', '이메일을 입력해주세요.');
+      return Alert.alert(t('alert'), t('emailRequired'));
     }
     if (!password) {
-      return Alert.alert('알림', '비밀번호를 입력해주세요.');
+      return Alert.alert(t('alert'), t('passwordRequired'));
     }
     try {
       console.log(Config.API_URL)
@@ -46,7 +61,7 @@ function SignIn({ navigation }: SignInScreenProps) {
         user_id: email,
         user_password: password,
       });
-      Alert.alert('알림', '로그인 되었습니다.');
+      Alert.alert(t('alert'), t('loginSuccess'));
       dispatch(
         userSlice.actions.setUser({
           user_code: response.data.data.user_code,
@@ -62,29 +77,51 @@ function SignIn({ navigation }: SignInScreenProps) {
     } catch (error) {
       const errorResponse = (error as AxiosError<{ message: string }>).response;
       if (errorResponse) {
-        Alert.alert('알림', errorResponse.data.message);
+        Alert.alert(t('alert'), errorResponse.data.message);
       }
     }
-    // Alert.alert('로그인 완료', `${email}님 환영합니다!`);
-    // navigation.navigate('SignUp');
-  }, [email, password]);
-
-  // const toSignUp = useCallback(() => {
-  //   navigation.navigate('SignUp');
-  // }, [navigation]);
+  }, [email, password, t, dispatch]);
 
   const canGoNext = email && password;
 
   return (
     <DismissKeyboardView>
       <View style={styles.container}>
-        <Text style={styles.title}>로그인</Text>
+        <View style={styles.header}>
+          <Text style={styles.title}>{t('signIn')}</Text>
+          <TouchableOpacity style={styles.languageButtonContainer} onPress={() => setModalVisible(true)}>
+            <Text style={styles.languageButton}>🌐</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(!modalVisible);
+          }}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              {languages.map((language) => (
+                <TouchableOpacity
+                  key={language.code}
+                  style={styles.languageOption}
+                  onPress={() => changeLanguage(language.code)}
+                >
+                  <Text style={styles.languageOptionText}>{language.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </Modal>
 
         <View style={styles.inputWrapper}>
-          <Text style={styles.label}>이메일</Text>
+          <Text style={styles.label}>{t('email')}</Text>
           <TextInput
             style={styles.textInput}
-            placeholder="이메일을 입력해주세요"
+            placeholder={t('emailPlaceholder')}
             placeholderTextColor="#888"
             autoComplete="email"
             textContentType="emailAddress"
@@ -97,10 +134,10 @@ function SignIn({ navigation }: SignInScreenProps) {
         </View>
 
         <View style={styles.inputWrapper}>
-          <Text style={styles.label}>비밀번호</Text>
+          <Text style={styles.label}>{t('password')}</Text>
           <TextInput
             style={styles.textInput}
-            placeholder="비밀번호를 입력해주세요"
+            placeholder={t('passwordPlaceholder')}
             placeholderTextColor="#888"
             secureTextEntry
             autoComplete="password"
@@ -122,12 +159,8 @@ function SignIn({ navigation }: SignInScreenProps) {
             onPress={onSubmit}
             disabled={!canGoNext}
           >
-            <Text style={styles.loginButtonText}>로그인</Text>
+            <Text style={styles.loginButtonText}>{t('signIn')}</Text>
           </Pressable>
-
-          {/* <Pressable onPress={toSignUp}>
-            <Text style={styles.signUpText}>회원가입</Text>
-          </Pressable> */}
         </View>
       </View>
     </DismissKeyboardView>
@@ -141,12 +174,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     justifyContent: 'center',
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 40,
+    position: 'relative',
+  },
   title: {
     fontSize: 28,
     fontWeight: '700',
     color: '#1e3a8a',
-    marginBottom: 40,
-    textAlign: 'center',
+  },
+  languageButtonContainer: {
+    position: 'absolute',
+    right: 0,
+  },
+  languageButton: {
+    fontSize: 24,
   },
   inputWrapper: {
     marginBottom: 20,
@@ -185,11 +230,33 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 16,
   },
-  signUpText: {
-    color: '#2563eb',
-    fontSize: 14,
-    fontWeight: '500',
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22
   },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5
+  },
+  languageOption: {
+    padding: 10,
+  },
+  languageOptionText: {
+    fontSize: 18,
+  }
 });
 
 export default SignIn;
