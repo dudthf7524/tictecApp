@@ -5,6 +5,7 @@ import {
   StyleSheet,
   StatusBar,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { useSelector } from 'react-redux';
@@ -28,13 +29,11 @@ const TimeTable = React.memo(() => {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      // 시간 정보 가져오기
       const timeResponse = await axios.get(`${Config.API_URL}/app/time/detail`, {
         headers: { authorization: `Bearer ${accessToken}` },
       });
       dispatch(timeSlice.actions.getTime(timeResponse.data));
 
-      // 출근 정보 가져오기
       const attendanceResponse = await axios.get(`${Config.API_URL}/app/attendance/today`, {
         headers: { authorization: `Bearer ${accessToken}` },
       });
@@ -47,48 +46,49 @@ const TimeTable = React.memo(() => {
     }
   }, [dispatch, accessToken]);
 
-  // 탭이 포커스될 때마다 데이터 새로고침
   useFocusEffect(
     useCallback(() => {
       fetchData();
     }, [fetchData])
   );
 
-  // if (isLoading) {
-  //   return (
-  //     <View style={[styles.container, styles.loadingContainer]}>
-  //       <ActivityIndicator size="large" color="#2563eb" />
-  //       <Text style={styles.loadingText}>데이터를 불러오는 중...</Text>
-  //     </View>
-  //   );
-  // }
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color="#2563eb" />
+        <Text style={styles.loadingText}>데이터를 불러오는 중...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <StatusBar barStyle="light-content" backgroundColor="#2563eb" />
+      <ScrollView contentContainerStyle={styles.scrollContent}>
 
-      <View style={styles.content}>
-        <View style={styles.timeInfoBox}>
-          <InfoBlock icon="calendar" title={t('companyGoToWorkTime')} value={timeDetail?.start_time || t('notSet')} />
-          <InfoBlock icon="calendar" title={t('companyLeaveWorkTime')} value={timeDetail?.end_time || t('notSet')} />
-          <InfoBlock
-            icon="coffee"
-            title={t('breakTime')}
-            value={
-              timeDetail?.rest_start_time && timeDetail?.rest_end_time
-                ? `${timeDetail.rest_start_time} ~ ${timeDetail.rest_end_time}`
-                : t('notSet')
-            }
-          />
-        </View>
+        <View style={styles.boxContainer}>
+          <View style={styles.box}>
+            <InfoBlock icon="calendar" title={t('companyGoToWorkTime')} value={timeDetail?.start_time || t('notSet')} />
+            <InfoBlock icon="calendar" title={t('companyLeaveWorkTime')} value={timeDetail?.end_time || t('notSet')} />
+            <InfoBlock
+              icon="coffee"
+              title={t('breakTime')}
+              value={
+                timeDetail?.rest_start_time && timeDetail?.rest_end_time
+                  ? `${timeDetail.rest_start_time} ~ ${timeDetail.rest_end_time}`
+                  : t('notSet')
+              }
+            />
+          </View>
 
-        <View style={styles.recordBox}>
-          <InfoBlock icon="log-in" iconColor="#10b981" title={t('goToWorkDate')} value={attendanceToday?.attendance_start_date || t('beforeGoToWork')} />
-          <InfoBlock icon="clock" title={t('goToWorkTime')} value={attendanceToday?.attendance_start_time || t('beforeGoToWork')} />
-          <InfoBlock icon="log-out" iconColor="#ef4444" title={t('leaveWorkDate')} value={attendanceToday?.attendance_end_date || t('beforeGoToWork')} />
-          <InfoBlock icon="clock" title={t('leaveWorkTime')} value={attendanceToday?.attendance_end_time || t('beforeGoToWork')} />
+          <View style={styles.box}>
+            <InfoBlock icon="log-in" iconColor="#10b981" title={t('goToWorkDate')} value={attendanceToday?.attendance_start_date || t('beforeGoToWork')} />
+            <InfoBlock icon="clock" title={t('goToWorkTime')} value={attendanceToday?.attendance_start_time || t('beforeGoToWork')} />
+            <InfoBlock icon="log-out" iconColor="#ef4444" title={t('leaveWorkDate')} value={attendanceToday?.attendance_end_date || t('beforeGoToWork')} />
+            <InfoBlock icon="clock" title={t('leaveWorkTime')} value={attendanceToday?.attendance_end_time || t('beforeGoToWork')} />
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 });
@@ -97,7 +97,7 @@ const InfoBlock = React.memo(({
   icon,
   title,
   value,
-  iconColor = '#6b7280',
+  iconColor = '#4b5563',
 }: {
   icon: string;
   title: string;
@@ -105,67 +105,72 @@ const InfoBlock = React.memo(({
   iconColor?: string;
 }) => (
   <View style={styles.infoBlock}>
-    <View style={styles.iconLabelRow}>
-      <Icon name={icon} size={16} color={iconColor} style={styles.icon} />
+    <Icon name={icon} size={18} color={iconColor} style={styles.icon} />
+    <View>
       <Text style={styles.infoTitle}>{title}</Text>
+      <Text style={styles.infoValue}>{value}</Text>
     </View>
-    <Text style={styles.infoValue}>{value}</Text>
   </View>
 ));
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 40,
   },
   loadingContainer: {
     justifyContent: 'center',
     alignItems: 'center',
+    flex: 1,
+    backgroundColor: '#ffffff',
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#6b7280',
+    color: '#4b5563',
   },
-  content: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 16,
-  },
-  timeInfoBox: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    padding: 16,
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#111827',
     marginBottom: 20,
+    textAlign: 'center',
+  },
+  boxContainer: {
+    flex: 1,
+    flexDirection: 'column',
     justifyContent: 'space-between',
   },
-  recordBox: {
+  box: {
     flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    padding: 16,
-    justifyContent: 'space-between',
+    borderColor: '#e5e7eb',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   infoBlock: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
-  },
-  iconLabelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    marginBottom: 16,
   },
   icon: {
-    marginRight: 6,
+    marginRight: 10,
   },
   infoTitle: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6b7280',
+    marginBottom: 2,
   },
   infoValue: {
     fontSize: 16,

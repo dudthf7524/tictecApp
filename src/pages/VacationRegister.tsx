@@ -18,6 +18,7 @@ import { RootState } from '../store/reducer';
 import { useTranslation } from 'react-i18next';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../AppInner';
+import DismissKeyboardView from '../components/DismissKeyboardView';
 
 type SignInScreenProps = NativeStackScreenProps<RootStackParamList>;
 const VacationRegister = ({ navigation }: SignInScreenProps) => {
@@ -75,7 +76,7 @@ const VacationRegister = ({ navigation }: SignInScreenProps) => {
         if (!form.reason || !form.reason.trim()) {
             return Alert.alert(t('alert'), t('reasonRequired'));
         }
-        
+
         try {
 
             const response = await axios.post(`${Config.API_URL}/app/vacation/register`, {
@@ -87,7 +88,7 @@ const VacationRegister = ({ navigation }: SignInScreenProps) => {
                     headers: { authorization: `Bearer ${accessToken}` },
                 }
             );
-            if(response.data){
+            if (response.data) {
                 Alert.alert(t('alert'), t('vacationRegistrationComplete'));
                 navigation.navigate('Calendars')
             }
@@ -103,62 +104,65 @@ const VacationRegister = ({ navigation }: SignInScreenProps) => {
     }, [form.startDate, form.endDate, form.reason, t]);
 
     return (
-        <View style={styles.container}>
-            {/* 시작일 */}
-            <View style={[styles.section, { flex: 1 }]}>
-                <Text style={styles.label}>{t('startDate')}</Text>
-                <TouchableOpacity style={styles.input} onPress={() => showDatePicker('start')}>
-                    <Text style={!form.startDate ? styles.placeholderText : styles.filledText}>
-                        {form.startDate || t('selectStartDate')}
-                    </Text>
-                </TouchableOpacity>
-            </View>
+        <DismissKeyboardView>
+            <View style={styles.container}>
+                {/* 시작일 */}
+                <View style={[styles.section, { flex: 1 }]}>
+                    <Text style={styles.label}>{t('startDate')}</Text>
+                    <TouchableOpacity style={styles.input} onPress={() => showDatePicker('start')}>
+                        <Text style={!form.startDate ? styles.placeholderText : styles.filledText}>
+                            {form.startDate || t('selectStartDate')}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
 
-            {/* 종료일 */}
-            <View style={[styles.section, { flex: 1 }]}>
-                <Text style={styles.label}>{t('endDate')}</Text>
-                <TouchableOpacity style={styles.input} onPress={() => showDatePicker('end')}>
-                    <Text style={!form.endDate ? styles.placeholderText : styles.filledText}>
-                        {form.endDate || t('selectEndDate')}
-                    </Text>
-                </TouchableOpacity>
-            </View>
+                {/* 종료일 */}
+                <View style={[styles.section, { flex: 1 }]}>
+                    <Text style={styles.label}>{t('endDate')}</Text>
+                    <TouchableOpacity style={styles.input} onPress={() => showDatePicker('end')}>
+                        <Text style={!form.endDate ? styles.placeholderText : styles.filledText}>
+                            {form.endDate || t('selectEndDate')}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
 
-            {/* 사유 */}
-            <View style={[styles.section, { flex: 6 }]}>
-                <Text style={styles.label}>{t('reason')}</Text>
-                <TextInput
-                    style={[styles.input, styles.textArea]}
-                    placeholder={t('enterReason')}
-                    placeholderTextColor="#9ca3af"
-                    value={form.reason}
-                    onChangeText={(text) => setForm((prev) => ({ ...prev, reason: text }))}
-                    multiline
-                    textAlignVertical="top"
+                {/* 사유 */}
+                <View style={[styles.section, { flex: 6 }]}>
+                    <Text style={styles.label}>{t('reason')}</Text>
+                    <TextInput
+                        style={[styles.input, styles.textArea]}
+                        placeholder={t('enterReason')}
+                        placeholderTextColor="#9ca3af"
+                        value={form.reason}
+                        onChangeText={(text) => setForm((prev) => ({ ...prev, reason: text }))}
+                        multiline
+                        textAlignVertical="top"
+                    />
+                </View>
+
+                {/* Date Picker */}
+                <DateTimePickerModal
+                    isVisible={isDatePickerVisible}
+                    mode="date"
+                    onConfirm={handleConfirm}
+                    onCancel={hideDatePicker}
+                    locale="en"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                 />
-            </View>
 
-            {/* Date Picker */}
-            <DateTimePickerModal
-                isVisible={isDatePickerVisible}
-                mode="date"
-                onConfirm={handleConfirm}
-                onCancel={hideDatePicker}
-                locale="en"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            />
-
-            {/* 등록 버튼 */}
-            <View style={[styles.section, { flex: 2, justifyContent: 'center' }]}>
-                <TouchableOpacity style={styles.actionButton} onPress={handleRegister}>
-                    <View style={styles.actionContent}>
-                        <Icon name="check-circle" size={20} color="#2563eb" />
-                        <Text style={styles.actionLabel}>{t('vacationRegister')}</Text>
-                    </View>
-                    <Icon name="chevron-right" size={20} color="#9CA3AF" />
-                </TouchableOpacity>
+                {/* 등록 버튼 */}
+                <View style={[styles.section, { flex: 2, justifyContent: 'center' }]}>
+                    <TouchableOpacity style={styles.actionButton} onPress={handleRegister}>
+                        <View style={styles.actionContent}>
+                            <Icon name="check-circle" size={20} color="#2563eb" />
+                            <Text style={styles.actionLabel}>{t('vacationRegister')}</Text>
+                        </View>
+                        <Icon name="chevron-right" size={20} color="#9CA3AF" />
+                    </TouchableOpacity>
+                </View>
             </View>
-        </View>
+        </DismissKeyboardView>
+
     );
 };
 

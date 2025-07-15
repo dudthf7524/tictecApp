@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  StatusBar,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather'; // 위치 아이콘
 import Today from '../subPages/Today';
@@ -127,6 +128,7 @@ const Attendance = React.memo(({ navigation }: SignInScreenProps) => {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#2563eb" />
       <View style={styles.content}>
         <View style={styles.noticeBox}>
           <Text style={styles.noticeText}>{t('notice')}</Text>

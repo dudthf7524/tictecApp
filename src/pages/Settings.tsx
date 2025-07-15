@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert, StatusBar } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 import Config from 'react-native-config';
@@ -42,30 +42,32 @@ const Settings = React.memo(() => {
   }, [accessToken, dispatch, t]);
   return (
     <View style={styles.container}>
+            <StatusBar barStyle="light-content" backgroundColor="#2563eb" />
+
       <View style={styles.contentContainer}>
-        <TouchableOpacity style={styles.actionButton}>
+        {/* <TouchableOpacity style={styles.actionButton}>
           <View style={styles.actionContent}>
             <Icon name="user" size={20} color="#4B5563" />
             <Text style={styles.actionLabel}>{t('profileSettings')}</Text>
           </View>
           <Icon name="chevron-right" size={20} color="#9CA3AF" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
-        <TouchableOpacity style={styles.actionButton}>
+        {/* <TouchableOpacity style={styles.actionButton}>
           <View style={styles.actionContent}>
             <Icon name="bell" size={20} color="#4B5563" />
             <Text style={styles.actionLabel}>{t('notificationSettings')}</Text>
           </View>
           <Icon name="chevron-right" size={20} color="#9CA3AF" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
-        <TouchableOpacity style={styles.actionButton}>
+        {/* <TouchableOpacity style={styles.actionButton}>
           <View style={styles.actionContent}>
             <Icon name="lock" size={20} color="#4B5563" />
             <Text style={styles.actionLabel}>{t('passwordChange')}</Text>
           </View>
           <Icon name="chevron-right" size={20} color="#9CA3AF" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <TouchableOpacity style={styles.actionButton} onPress={() => setModalVisible(true)}>
           <View style={styles.actionContent}>
@@ -75,13 +77,13 @@ const Settings = React.memo(() => {
           <Icon name="chevron-right" size={20} color="#9CA3AF" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.actionButton}>
+        {/* <TouchableOpacity style={styles.actionButton}>
           <View style={styles.actionContent}>
             <Icon name="info" size={20} color="#4B5563" />
             <Text style={styles.actionLabel}>{t('appInfo')}</Text>
           </View>
           <Icon name="chevron-right" size={20} color="#9CA3AF" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <TouchableOpacity style={styles.actionButton} onPress={onLogout}>
           <View style={styles.actionContent}>

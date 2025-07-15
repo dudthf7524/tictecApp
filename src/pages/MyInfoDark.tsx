@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ActivityIndicator,
   ScrollView,
-  StatusBar,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { useSelector } from 'react-redux';
@@ -58,19 +57,17 @@ const MyInfo = React.memo(() => {
     return `${y}${t('year')} ${m}${t('month')} ${d}${t('date')}`;
   };
 
-  // if (isLoading) {
-  //   return (
-  //     <View style={[styles.container, styles.loadingContainer]}>
-  //       <ActivityIndicator size="large" color="#2563eb" />
-  //       <Text style={styles.loadingText}>{t('loadingUserInfo')}</Text>
-  //     </View>
-  //   );
-  // }
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color="#8b5cf6" />
+        <Text style={styles.loadingText}>{t('loadingUserInfo')}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#2563eb" />
-
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.box}>
           <InfoBlock icon="user" title={t('name')} value={userDetail?.user_name || ''} />
@@ -85,7 +82,7 @@ const MyInfo = React.memo(() => {
 
 const InfoBlock = React.memo(({ icon, title, value }: { icon: string; title: string; value: string }) => (
   <View style={styles.infoBlock}>
-    <Icon name={icon} size={20} color="#6366f1" style={styles.icon} />
+    <Icon name={icon} size={20} color="#a78bfa" style={styles.icon} />
     <View>
       <Text style={styles.infoTitle}>{title}</Text>
       <Text style={styles.infoValue}>{value}</Text>
@@ -96,7 +93,7 @@ const InfoBlock = React.memo(({ icon, title, value }: { icon: string; title: str
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#1e1b4b',
   },
   scrollContent: {
     padding: 20,
@@ -106,45 +103,45 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#1e1b4b',
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#4b5563',
+    color: '#c4b5fd',
   },
   box: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#312e81',
     borderRadius: 16,
     padding: 24,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: '#4f46e5',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
   },
   infoBlock: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: '#4338ca',
   },
   icon: {
     marginRight: 12,
   },
   infoTitle: {
     fontSize: 14,
-    color: '#374151',
+    color: '#c4b5fd',
     marginBottom: 2,
   },
   infoValue: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#111827',
+    color: '#f9fafb',
   },
 });
 

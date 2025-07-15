@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  StatusBar,
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -123,6 +124,8 @@ const Calendars = React.memo(({ navigation }: SignInScreenProps) => {
 
   return (
     <ScrollView style={styles.wrapper}>
+            <StatusBar barStyle="light-content" backgroundColor="#2563eb" />
+
       <View style={styles.container}>
         <Calendar
           current={new Date().toISOString().split('T')[0]}

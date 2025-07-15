@@ -45,13 +45,13 @@ function MainTabs() {
     return (
         <Tab.Navigator
             screenOptions={{
-                tabBarActiveTintColor: '#2563eb',
+                tabBarActiveTintColor: '#ffffff',
                 tabBarInactiveTintColor: '#888888',
                 headerStyle: {
-                    backgroundColor: '#ffffff',
+                    backgroundColor: '#1e1b4b',
                 },
                 headerShadowVisible: false,
-                headerTintColor: '#000',
+                headerTintColor: '#fff',
                 headerTitleStyle: {
                     fontWeight: 'bold',
                 },
@@ -60,7 +60,7 @@ function MainTabs() {
                 unmountOnBlur: false,
                 // 부드러운 전환을 위한 애니메이션 설정
                 tabBarStyle: {
-                    backgroundColor: '#ffffff',
+                    backgroundColor: '#1e1b4b',
                     borderTopWidth: 1,
                     borderTopColor: '#e5e7eb',
                     elevation: 8,

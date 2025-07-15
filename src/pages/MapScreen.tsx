@@ -11,8 +11,8 @@ type LatLng = {
 };
 
 const COMPANY_LOCATION = {
-  latitude: 35.8268,
-  longitude: 128.756,
+  latitude: 35.824364,
+  longitude: 128.756343,
 };
 
 const MapScreen = () => {
