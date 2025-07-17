@@ -13,15 +13,15 @@ const Project = ({ onFinish }: { onFinish: () => void }) => {
 
     return (
         <View style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#2563eb" />
+            <StatusBar barStyle="light-content" backgroundColor="#1e1b4b" />
             <Animatable.Text animation="fadeInDown" duration={1000} style={styles.title}>
                 tictec
             </Animatable.Text>
-            <Animatable.Image
+            {/* <Animatable.Image
                 source={require('../assets/pointerLogo.png')} // 실제 로고 경로
                 style={styles.logo}
                 resizeMode="contain"
-            />
+            /> */}
             <Animatable.Text animation="fadeInUp" delay={500} duration={1000} style={styles.subtitle}>
                 출결 관리 솔루션
             </Animatable.Text>
@@ -34,7 +34,7 @@ export default Project;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#2563eb',
+        backgroundColor: '#1e1b4b',
         justifyContent: 'center',
         alignItems: 'center',
     },

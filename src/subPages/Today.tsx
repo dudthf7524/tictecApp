@@ -45,19 +45,9 @@ const styles = StyleSheet.create({
     container: {
         width: '100%',
         backgroundColor: '#ffffff',
-        borderColor: '#e5e7eb',
-        borderWidth: 1,
-        paddingHorizontal: 24,
-        paddingVertical: 16,
         alignItems: 'center',
         justifyContent: 'center',
-        borderRadius: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
-        flex: 1
+        flex: 3
     },
     dateText: {
         fontWeight: '600',

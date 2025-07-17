@@ -42,7 +42,7 @@ const Settings = React.memo(() => {
   }, [accessToken, dispatch, t]);
   return (
     <View style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#2563eb" />
+      <StatusBar barStyle="light-content" backgroundColor="#2563eb" />
 
       <View style={styles.contentContainer}>
         {/* <TouchableOpacity style={styles.actionButton}>
@@ -104,6 +104,13 @@ const Settings = React.memo(() => {
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
+            <TouchableOpacity
+              onPress={() => setModalVisible(false)}
+              style={styles.closeButton}
+            >
+              <Icon name="x" size={24} color="#333" />
+            </TouchableOpacity>
+
             {languages.map((language) => (
               <TouchableOpacity
                 key={language.code}
@@ -167,6 +174,8 @@ const styles = StyleSheet.create({
       width: 0,
       height: 2
     },
+    width: '100%',
+    height: '90%',
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5
@@ -176,5 +185,11 @@ const styles = StyleSheet.create({
   },
   languageOptionText: {
     fontSize: 18,
-  }
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    zIndex: 10,
+  },
 });

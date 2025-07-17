@@ -52,14 +52,14 @@ const TimeTable = React.memo(() => {
     }, [fetchData])
   );
 
-  if (isLoading) {
-    return (
-      <View style={[styles.container, styles.loadingContainer]}>
-        <ActivityIndicator size="large" color="#2563eb" />
-        <Text style={styles.loadingText}>데이터를 불러오는 중...</Text>
-      </View>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <View style={[styles.container, styles.loadingContainer]}>
+  //       <ActivityIndicator size="large" color="#2563eb" />
+  //       <Text style={styles.loadingText}>데이터를 불러오는 중...</Text>
+  //     </View>
+  //   );
+  // }
 
   return (
     <View style={styles.container}>
@@ -68,10 +68,11 @@ const TimeTable = React.memo(() => {
 
         <View style={styles.boxContainer}>
           <View style={styles.box}>
-            <InfoBlock icon="calendar" title={t('companyGoToWorkTime')} value={timeDetail?.start_time || t('notSet')} />
-            <InfoBlock icon="calendar" title={t('companyLeaveWorkTime')} value={timeDetail?.end_time || t('notSet')} />
+            <InfoBlock icon="calendar" iconColor="#6366f1" title={t('companyGoToWorkTime')} value={timeDetail?.start_time || t('notSet')} />
+            <InfoBlock icon="calendar" iconColor="#6366f1" title={t('companyLeaveWorkTime')} value={timeDetail?.end_time || t('notSet')} />
             <InfoBlock
               icon="coffee"
+              iconColor="#6366f1"
               title={t('breakTime')}
               value={
                 timeDetail?.rest_start_time && timeDetail?.rest_end_time
@@ -83,9 +84,9 @@ const TimeTable = React.memo(() => {
 
           <View style={styles.box}>
             <InfoBlock icon="log-in" iconColor="#10b981" title={t('goToWorkDate')} value={attendanceToday?.attendance_start_date || t('beforeGoToWork')} />
-            <InfoBlock icon="clock" title={t('goToWorkTime')} value={attendanceToday?.attendance_start_time || t('beforeGoToWork')} />
+            <InfoBlock icon="clock" iconColor="#6366f1" title={t('goToWorkTime')} value={attendanceToday?.attendance_start_time || t('beforeGoToWork')} />
             <InfoBlock icon="log-out" iconColor="#ef4444" title={t('leaveWorkDate')} value={attendanceToday?.attendance_end_date || t('beforeGoToWork')} />
-            <InfoBlock icon="clock" title={t('leaveWorkTime')} value={attendanceToday?.attendance_end_time || t('beforeGoToWork')} />
+            <InfoBlock icon="clock" iconColor="#6366f1" title={t('leaveWorkTime')} value={attendanceToday?.attendance_end_time || t('beforeGoToWork')} />
           </View>
         </View>
       </ScrollView>
@@ -117,10 +118,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
+    justifyContent:"center"
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 40,
+    flexGrow:1
   },
   loadingContainer: {
     justifyContent: 'center',
@@ -150,19 +152,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 20,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    marginBottom: 30,
+    // borderWidth: 1,
+    // borderColor: '#e5e7eb',
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.05,
+    // shadowRadius: 4,
+    // elevation: 2,
+    justifyContent : 'space-between'
   },
   infoBlock: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
   },
   icon: {
     marginRight: 10,

@@ -1,6 +1,6 @@
 // components/MapScreen.tsx
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, PermissionsAndroid, Platform } from 'react-native';
+import { View, StyleSheet, PermissionsAndroid, Platform, StatusBar } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -16,7 +16,7 @@ const COMPANY_LOCATION = {
 };
 
 const MapScreen = () => {
-const [userLocation, setUserLocation] = useState<LatLng | null>(null);
+  const [userLocation, setUserLocation] = useState<LatLng | null>(null);
 
   console.log(userLocation)
   useEffect(() => {
@@ -52,6 +52,7 @@ const [userLocation, setUserLocation] = useState<LatLng | null>(null);
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#1e1b4b" />
       <MapView
         style={styles.map}
         region={{
@@ -71,23 +72,23 @@ const [userLocation, setUserLocation] = useState<LatLng | null>(null);
           fillColor="rgba(0,0,255,0.2)"
         /> */}
 
-<Marker coordinate={COMPANY_LOCATION}>
-  <FontAwesome name="building" size={30} color="blue" />
-</Marker>
-<Circle
+        <Marker coordinate={COMPANY_LOCATION}>
+          <FontAwesome name="building" size={30} color="blue" />
+        </Marker>
+        <Circle
           center={COMPANY_LOCATION}
           radius={100} // 100m 반경
           strokeColor="rgba(0,0,255,0.5)"
           fillColor="rgba(0,0,255,0.2)"
-        /> 
+        />
 
         {/* 사용자 위치 마커 + 반경 */}
         {userLocation && (
           <>
             {/* <Marker coordinate={userLocation} title="내 위치" pinColor="green" /> */}
             <Marker coordinate={userLocation}>
-    <FontAwesome name="user" size={30} color="green" />
-  </Marker>
+              <FontAwesome name="user" size={30} color="green" />
+            </Marker>
             <Circle
               center={userLocation}
               radius={50}

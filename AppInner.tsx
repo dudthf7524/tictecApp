@@ -51,7 +51,7 @@ function MainTabs() {
                     backgroundColor: '#1e1b4b',
                 },
                 headerShadowVisible: false,
-                headerTintColor: '#fff',
+                headerTintColor: '#ffffff',
                 headerTitleStyle: {
                     fontWeight: 'bold',
                 },
@@ -245,7 +245,12 @@ function AppInner() {
                                 headerBackTitleVisible: false,
                                 headerTitleAlign: 'center',
                                 headerShadowVisible: false,
+                                headerStyle: {
+                                    backgroundColor: '#1e1b4b',
+                                },
+                                headerTintColor: '#ffffff',
                             }}
+                            
                         />
                         <RootStack.Screen
                             name="VacationRegister"
@@ -255,7 +260,10 @@ function AppInner() {
                                 headerBackTitleVisible: false,
                                 headerTitleAlign: 'center',
                                 headerShadowVisible: false,
-
+                                headerStyle: {
+                                    backgroundColor: '#1e1b4b',
+                                },
+                                headerTintColor: '#ffffff',
                             }}
                             
                         />

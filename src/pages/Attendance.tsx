@@ -128,49 +128,43 @@ const Attendance = React.memo(({ navigation }: SignInScreenProps) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#2563eb" />
+      <StatusBar barStyle="light-content" backgroundColor="#1e1b4b" />
       <View style={styles.content}>
-        <View style={styles.noticeBox}>
+        {/* <View style={styles.noticeBox}>
+          <Text style={styles.noticeText}>{t('notice')}</Text>
+        </View> */}
+        <View style={styles.noticeBar}>
           <Text style={styles.noticeText}>{t('notice')}</Text>
         </View>
-
+        
         <Today />
 
-        <TouchableOpacity style={styles.locationBtn} onPress={toMapScreen}>
+        {/* <TouchableOpacity style={styles.locationBtn} onPress={toMapScreen}>
           <Icon name="map-pin" size={20} color="#4F46E5" />
           <Text style={styles.locationText}>GPS</Text>
+        </TouchableOpacity> */}
+
+        <TouchableOpacity style={styles.actionButton} onPress={toMapScreen}>
+          <View style={styles.actionContent}>
+            <Icon name="map-pin" size={20} color="#4F46E5" />
+            <Text style={styles.actionLabel}>GPS</Text>
+          </View>
+          <Icon name="chevron-right" size={20} color="#9CA3AF" />
         </TouchableOpacity>
 
-        <View style={styles.buttonRow}>
-          <TouchableOpacity
-            disabled={hasStarted && !hasEnded}
-            style={[
-              styles.actionButton,
-              hasStarted && !hasEnded && styles.disabled,
-            ]}
-            onPress={attendance}
-          >
-            <View style={{ alignItems: 'center' }}>
-              <Icon name="log-in" size={28} color={hasStarted && !hasEnded ? '#9ca3af' : '#10b981'} />
-              <Text style={[styles.buttonText, { color: hasStarted && !hasEnded ? '#9ca3af' : '#10b981' }]}>{t('goToWork')}</Text>
-            </View>
-          </TouchableOpacity>
+        <TouchableOpacity disabled={hasStarted && !hasEnded} style={styles.actionButton} onPress={attendance}>
+          <View style={styles.actionContent}>
+            <Text style={[styles.actionLabel, { color: hasStarted && !hasEnded ? '#9ca3af' : '#10b981' }]}>{t('goToWork')}</Text>
+          </View>
+          <Icon name="log-in" size={20} color={hasStarted && !hasEnded ? '#9ca3af' : '#10b981'} />
+        </TouchableOpacity>
 
-          <TouchableOpacity
-            disabled={!hasStarted || hasEnded}
-            style={[
-              styles.actionButton,
-              (!hasStarted || hasEnded) && styles.disabled,
-            ]}
-            onPress={leaveWork}
-          >
-            <View style={{ alignItems: 'center' }}>
-              <Icon name="log-out" size={28} color={!hasStarted || hasEnded ? '#9ca3af' : '#ef4444'}
-              />
-              <Text style={[styles.buttonText, { color: !hasStarted || hasEnded ? '#9ca3af' : '#ef4444' },]}>{t('leaveWork')}</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity disabled={!hasStarted || hasEnded} style={styles.actionButton} onPress={leaveWork}>
+          <View style={styles.actionContent}>
+            <Text style={[styles.actionLabel, { color: !hasStarted || hasEnded ? '#9ca3af' : '#ef4444' }]}>{t('leaveWork')}</Text>
+          </View>
+          <Icon name="log-out" size={20} color={!hasStarted || hasEnded ? '#9ca3af' : '#ef4444'} />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -186,6 +180,14 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center'
   },
+  noticeBar: {
+    backgroundColor: '#fef3c7',
+    padding: 18,
+    borderRadius: 12,
+    marginBottom: 24,
+    borderLeftWidth: 4,
+    borderLeftColor: '#facc15',
+  },
   noticeBox: {
     backgroundColor: '#e0edff',
     borderColor: '#90caff',
@@ -196,7 +198,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     flex: 1
   },
-  noticeText: { color: '#2563eb', fontSize: 14 },
+  noticeText: {
+    // color: '#2563eb',
+    color: '#92400e',
+    fontWeight: '600',
+    fontSize: 15,
+  },
   locationBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -250,14 +257,15 @@ const styles = StyleSheet.create({
     flex: 4
   },
   actionButton: {
-    flex: 1,
-    paddingVertical: 16,
-    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 0,
-    borderColor: '#2563eb',
-    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 20,
+    backgroundColor: '#ffffff',
   },
   active: {
     borderColor: '#2563eb',
@@ -284,6 +292,16 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 16,
     height: '90%',
+  },
+
+  actionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  actionLabel: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#1F2937',
   },
 });
 
