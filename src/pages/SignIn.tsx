@@ -8,16 +8,17 @@ import {
   View,
   Modal,
   TouchableOpacity,
+  StatusBar,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import { RootStackParamList } from '../../AppInner';
-import DismissKeyboardView from '../components/DismissKeyboardView';
 import axios, { AxiosError } from 'axios';
 import Config from 'react-native-config';
 import { useAppDispatch } from '../store';
 import userSlice from '../slices/user';
 import { useTranslation } from 'react-i18next';
+import StaticKeyboardView from '../components/StaticKeyboardView';
 
 type SignInScreenProps = NativeStackScreenProps<RootStackParamList, 'SignIn'>;
 
@@ -85,7 +86,7 @@ function SignIn({ navigation }: SignInScreenProps) {
   const canGoNext = email && password;
 
   return (
-    <DismissKeyboardView>
+    <StaticKeyboardView>
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>{t('signIn')}</Text>
@@ -163,7 +164,7 @@ function SignIn({ navigation }: SignInScreenProps) {
           </Pressable>
         </View>
       </View>
-    </DismissKeyboardView>
+    </StaticKeyboardView>
   );
 }
 

@@ -3,9 +3,9 @@ import {
   View,
   Text,
   StyleSheet,
-  StatusBar,
-  ActivityIndicator,
   ScrollView,
+  SafeAreaView,
+  TouchableOpacity,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { useSelector } from 'react-redux';
@@ -17,6 +17,7 @@ import timeSlice from '../slices/time';
 import attendanceSlice from '../slices/attendance';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
+import StaticKeyboardView from '../components/StaticKeyboardView';
 
 const TimeTable = React.memo(() => {
   const { t } = useTranslation();
@@ -62,35 +63,94 @@ const TimeTable = React.memo(() => {
   // }
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#2563eb" />
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+    <StaticKeyboardView>
+      <SafeAreaView style={styles.container}>
+        <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+          {/* Company Schedule Card */}
 
-        <View style={styles.boxContainer}>
-          <View style={styles.box}>
-            <InfoBlock icon="calendar" iconColor="#6366f1" title={t('companyGoToWorkTime')} value={timeDetail?.start_time || t('notSet')} />
-            <InfoBlock icon="calendar" iconColor="#6366f1" title={t('companyLeaveWorkTime')} value={timeDetail?.end_time || t('notSet')} />
+          {/* Status Summary Card */}
+          <View style={styles.statusCard}>
+            <View style={styles.statusHeader}>
+              <Icon name="activity" size={20} color="#667eea" />
+              <Text style={styles.statusTitle}>오늘 근무 상태</Text>
+            </View>
+            <View style={styles.statusContent}>
+              <View style={styles.statusItem}>
+                <View style={[styles.statusDot, { backgroundColor: attendanceToday?.attendance_start_time ? '#10b981' : '#e5e7eb' }]} />
+                <Text style={styles.statusText}>출근</Text>
+              </View>
+              <View style={styles.statusItem}>
+                <View style={[styles.statusDot, { backgroundColor: attendanceToday?.attendance_end_time ? '#ef4444' : '#e5e7eb' }]} />
+                <Text style={styles.statusText}>퇴근</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Icon name="briefcase" size={20} color="#667eea" />
+              <Text style={styles.cardTitle}>회사 근무 시간</Text>
+            </View>
+            <InfoBlock
+              icon="sunrise"
+              iconColor="#10b981"
+              title="출근 시간"
+              value={timeDetail?.start_time || '미설정'}
+            />
+            <InfoBlock
+              icon="sunset"
+              iconColor="#ef4444"
+              title="퇴근 시간"
+              value={timeDetail?.end_time || '미설정'}
+            />
             <InfoBlock
               icon="coffee"
-              iconColor="#6366f1"
-              title={t('breakTime')}
+              iconColor="#f59e0b"
+              title="휴가 시간"
               value={
                 timeDetail?.rest_start_time && timeDetail?.rest_end_time
                   ? `${timeDetail.rest_start_time} ~ ${timeDetail.rest_end_time}`
-                  : t('notSet')
+                  : '미설정'
               }
             />
           </View>
 
-          <View style={styles.box}>
-            <InfoBlock icon="log-in" iconColor="#10b981" title={t('goToWorkDate')} value={attendanceToday?.attendance_start_date || t('beforeGoToWork')} />
-            <InfoBlock icon="clock" iconColor="#6366f1" title={t('goToWorkTime')} value={attendanceToday?.attendance_start_time || t('beforeGoToWork')} />
-            <InfoBlock icon="log-out" iconColor="#ef4444" title={t('leaveWorkDate')} value={attendanceToday?.attendance_end_date || t('beforeGoToWork')} />
-            <InfoBlock icon="clock" iconColor="#6366f1" title={t('leaveWorkTime')} value={attendanceToday?.attendance_end_time || t('beforeGoToWork')} />
+          {/* Today's Attendance Card */}
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Icon name="user-check" size={20} color="#667eea" />
+              <Text style={styles.cardTitle}>오늘 출근 현황</Text>
+            </View>
+            <InfoBlock
+              icon="log-in"
+              iconColor="#10b981"
+              title="출근 일자"
+              value={attendanceToday?.attendance_start_date || '출근 전'}
+            />
+            <InfoBlock
+              icon="clock"
+              iconColor="#10b981"
+              title="출근 시간"
+              value={attendanceToday?.attendance_start_time || '출근 전'}
+            />
+            <InfoBlock
+              icon="log-out"
+              iconColor="#ef4444"
+              title="퇴근 일자"
+              value={attendanceToday?.attendance_end_date || '퇴근 전'}
+            />
+            <InfoBlock
+              icon="clock"
+              iconColor="#ef4444"
+              title="퇴근 시간"
+              value={attendanceToday?.attendance_end_time || '퇴근 전'}
+            />
           </View>
-        </View>
-      </ScrollView>
-    </View>
+
+
+        </ScrollView>
+      </SafeAreaView>
+    </StaticKeyboardView>
   );
 });
 
@@ -105,82 +165,127 @@ const InfoBlock = React.memo(({
   value: string;
   iconColor?: string;
 }) => (
-  <View style={styles.infoBlock}>
-    <Icon name={icon} size={18} color={iconColor} style={styles.icon} />
-    <View>
+  <TouchableOpacity style={styles.infoBlock} activeOpacity={0.7}>
+    <View style={styles.iconContainer}>
+      <Icon name={icon} size={18} color={iconColor} />
+    </View>
+    <View style={styles.infoContent}>
       <Text style={styles.infoTitle}>{title}</Text>
       <Text style={styles.infoValue}>{value}</Text>
     </View>
-  </View>
+  </TouchableOpacity>
 ));
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
-    justifyContent:"center"
   },
-  scrollContent: {
-    padding: 20,
-    flexGrow:1
+  scrollContainer: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    paddingTop: 20,
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 16,
+    padding: 16,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2d3748',
+    marginLeft: 8,
+  },
+  statusCard: {
+    backgroundColor: '#ffffff',
+    marginHorizontal: 16,
+    marginBottom: 32,
+    borderRadius: 16,
+    padding: 16,
+  },
+  statusHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  statusTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2d3748',
+    marginLeft: 8,
+  },
+  statusContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  statusItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 8,
+  },
+  statusText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#4a5568',
+  },
+  infoBlock: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    borderRadius: 8,
+  },
+  iconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#f1f5f9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  infoContent: {
+    flex: 1,
+  },
+  infoTitle: {
+    fontSize: 14,
+    color: '#64748b',
+    marginBottom: 2,
+    fontWeight: '500',
+  },
+  infoValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a202c',
   },
   loadingContainer: {
     justifyContent: 'center',
     alignItems: 'center',
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f7fafc',
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#4b5563',
-  },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  boxContainer: {
-    flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-  },
-  box: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 30,
-    // borderWidth: 1,
-    // borderColor: '#e5e7eb',
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.05,
-    // shadowRadius: 4,
-    // elevation: 2,
-    justifyContent : 'space-between'
-  },
-  infoBlock: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
-  },
-  icon: {
-    marginRight: 10,
-  },
-  infoTitle: {
-    fontSize: 13,
-    color: '#6b7280',
-    marginBottom: 2,
-  },
-  infoValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
+    color: '#64748b',
   },
 });
 

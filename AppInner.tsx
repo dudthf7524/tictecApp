@@ -27,10 +27,19 @@ import Settings from './src/pages/Settings';
 import VacationRegister from './src/pages/VacationRegister';
 import { useTranslation } from 'react-i18next';
 
+// 탭 네비게이터 타입 정의
+export type TabParamList = {
+    TimeTable: undefined;
+    Attendance: undefined;
+    MyInfo: undefined;
+    Settings: undefined;
+    Calendars: undefined;
+};
+
 // 네비게이터 타입 정의
 export type RootStackParamList = {
     SignIn: undefined;
-    MainTabs: undefined;
+    MainTabs: { screen?: keyof TabParamList } | undefined;
     MapScreen: undefined;
     TimeTable: undefined;
     VacationRegister: undefined;
@@ -38,44 +47,44 @@ export type RootStackParamList = {
 };
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<TabParamList>();
 
 function MainTabs() {
     const { t } = useTranslation();
     return (
         <Tab.Navigator
             screenOptions={{
-                tabBarActiveTintColor: '#ffffff',
-                tabBarInactiveTintColor: '#888888',
+                tabBarActiveTintColor: '#000000',
+                // tabBarInactiveTintColor: '#888888',
                 headerStyle: {
-                    backgroundColor: '#1e1b4b',
+                    backgroundColor: '#ffffff',
                 },
-                headerShadowVisible: false,
-                headerTintColor: '#ffffff',
-                headerTitleStyle: {
-                    fontWeight: 'bold',
-                },
+                // headerShadowVisible: false,
+                headerTintColor: '#000000',
+                // headerTitleStyle: {
+                //     fontWeight: 'bold',
+                // },
                 headerTitleAlign: 'center',
                 // 언마운트 비활성화로 부드러운 전환
                 unmountOnBlur: false,
                 // 부드러운 전환을 위한 애니메이션 설정
-                tabBarStyle: {
-                    backgroundColor: '#1e1b4b',
-                    borderTopWidth: 1,
-                    borderTopColor: '#e5e7eb',
-                    elevation: 8,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: -2 },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 4,
-                },
+                // tabBarStyle: {
+                //     backgroundColor: '#1e1b4b',
+                //     borderTopWidth: 1,
+                //     borderTopColor: '#e5e7eb',
+                //     elevation: 8,
+                //     shadowColor: '#000',
+                //     shadowOffset: { width: 0, height: -2 },
+                //     shadowOpacity: 0.1,
+                //     shadowRadius: 4,
+                // },
                 // 탭 전환 애니메이션 개선
-                tabBarHideOnKeyboard: true,
-                tabBarShowLabel: true,
-                tabBarLabelStyle: {
-                    fontSize: 12,
-                    fontWeight: '500',
-                },
+                // tabBarHideOnKeyboard: true,
+                // tabBarShowLabel: true,
+                // tabBarLabelStyle: {
+                //     fontSize: 12,
+                //     fontWeight: '500',
+                // },
             }}>
             <Tab.Screen
                 name="TimeTable"
@@ -245,10 +254,6 @@ function AppInner() {
                                 headerBackTitleVisible: false,
                                 headerTitleAlign: 'center',
                                 headerShadowVisible: false,
-                                headerStyle: {
-                                    backgroundColor: '#1e1b4b',
-                                },
-                                headerTintColor: '#ffffff',
                             }}
                             
                         />
@@ -260,10 +265,6 @@ function AppInner() {
                                 headerBackTitleVisible: false,
                                 headerTitleAlign: 'center',
                                 headerShadowVisible: false,
-                                headerStyle: {
-                                    backgroundColor: '#1e1b4b',
-                                },
-                                headerTintColor: '#ffffff',
                             }}
                             
                         />

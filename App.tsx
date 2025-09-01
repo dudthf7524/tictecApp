@@ -9,8 +9,8 @@ import { NavigationContainer } from '@react-navigation/native';
 function App() {
   return (
     <Provider store={store}>
-      <StatusBar barStyle="light-content" backgroundColor="#1e1b4b" />
-      {/* <StatusBar barStyle="dark-content" backgroundColor="#ffffff" /> */}
+      {/* <StatusBar barStyle="light-content" backgroundColor="#1e1b4b" /> */}
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
        <NavigationContainer>
         <AppInner />
       </NavigationContainer>

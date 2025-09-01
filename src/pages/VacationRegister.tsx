@@ -78,7 +78,6 @@ const VacationRegister = ({ navigation }: SignInScreenProps) => {
         }
 
         try {
-
             const response = await axios.post(`${Config.API_URL}/app/vacation/register`, {
                 startDate: form.startDate,
                 endDate: form.endDate,

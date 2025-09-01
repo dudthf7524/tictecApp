@@ -62,14 +62,14 @@ const Calendars = React.memo(({ navigation }: SignInScreenProps) => {
   };
 
   const getVacationDotColor = (dateString: string) => {
-    const vacation = vacationLists.find(v => v.start_date === dateString);
+    const vacation = (vacationLists || []).find(v => v.start_date === dateString);
     if (vacation) {
       return getVacationStateColor(vacation.vacation_state);
     }
     return '#1abc9c'; // 기본 색상
   };
 
-  const markedDates = vacationLists.reduce((acc, cur) => {
+  const markedDates = (vacationLists || []).reduce((acc, cur) => {
     acc[cur.start_date] = { 
       marked: true, 
       dotColor: getVacationStateColor(cur.vacation_state)
@@ -85,7 +85,7 @@ const Calendars = React.memo(({ navigation }: SignInScreenProps) => {
     };
   }
 
-  const vacationOfDay = vacationLists.filter((item) => item.start_date === selectedDate);
+  const vacationOfDay = (vacationLists || []).filter((item) => item.start_date === selectedDate);
 
   const toVacationRegister = () => {
     navigation.navigate('VacationRegister');
@@ -124,7 +124,6 @@ const Calendars = React.memo(({ navigation }: SignInScreenProps) => {
 
   return (
     <ScrollView style={styles.wrapper}>
-            <StatusBar barStyle="light-content" backgroundColor="#2563eb" />
 
       <View style={styles.container}>
         <Calendar
@@ -132,7 +131,7 @@ const Calendars = React.memo(({ navigation }: SignInScreenProps) => {
           onDayPress={(day) => setSelectedDate(day.dateString)}
           markedDates={markedDates}
           dayComponent={({ date, state }) => {
-            const isVacation = vacationLists.some((v) => v.start_date === date.dateString);
+            const isVacation = (vacationLists || []).some((v) => v.start_date === date.dateString);
             return (
               <TouchableOpacity
                 onPress={() => setSelectedDate(date.dateString)}

@@ -8,7 +8,10 @@ import {
   ScrollView,
   Alert,
   StatusBar,
+  Platform,
+  PermissionsAndroid,
 } from 'react-native';
+import Geolocation from '@react-native-community/geolocation';
 import Icon from 'react-native-vector-icons/Feather'; // 위치 아이콘
 import Today from '../subPages/Today';
 import { RootStackParamList } from '../../AppInner';
@@ -19,14 +22,18 @@ import { RootState } from '../store/reducer';
 import axios, { AxiosError } from 'axios';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from '../store';
+import workPlaceSlice from '../slices/workPlace';
 
 type SignInScreenProps = NativeStackScreenProps<RootStackParamList>;
 
 const Attendance = React.memo(({ navigation }: SignInScreenProps) => {
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
   const accessToken = useSelector((state: RootState) => state.user.accessToken);
   const timeDetail = useSelector((state: RootState) => state.time.timeDetail);
   const attendanceToday = useSelector((state: RootState) => state.attendance.attendanceToday);
+  const isWithinRadius = useSelector((state: RootState) => state.workPlace.isWithinRadius);
 
   const hasStarted = !!attendanceToday?.attendance_start_time;
   const hasEnded = !!attendanceToday?.attendance_end_time;
@@ -35,7 +42,62 @@ const Attendance = React.memo(({ navigation }: SignInScreenProps) => {
     navigation.navigate('MapScreen');
   };
 
+  const checkGPSPermission = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (Platform.OS === 'android') {
+        PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        ).then((granted) => {
+          if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+            resolve(true);
+          } else {
+            Alert.alert(
+              t('alert'), 
+              'GPS 권한이 필요합니다. 설정에서 위치 권한을 허용해주세요.',
+              [{ text: '확인', onPress: () => resolve(false) }]
+            );
+          }
+        }).catch(() => {
+          Alert.alert(
+            t('alert'),
+            'GPS 권한 확인 중 오류가 발생했습니다.',
+            [{ text: '확인', onPress: () => resolve(false) }]
+          );
+        });
+      } else {
+        // iOS의 경우 위치 정보 요청
+        Geolocation.getCurrentPosition(
+          () => resolve(true),
+          () => {
+            Alert.alert(
+              t('alert'),
+              'GPS 권한이 필요합니다. 설정에서 위치 권한을 허용해주세요.',
+              [{ text: '확인', onPress: () => resolve(false) }]
+            );
+          },
+          { timeout: 5000 }
+        );
+      }
+    });
+  };
+
   const attendance = async () => {
+    // 위치 확인
+    if (!isWithinRadius) {
+      Alert.alert(
+        t('alert'), 
+        '회사 반경 안에 있지 않습니다. GPS 페이지에서 위치를 확인해주세요.',
+        [{ text: '확인' }]
+      );
+      return;
+    }
+
+    // GPS 권한 확인
+    const hasGPSPermission = await checkGPSPermission();
+    if (!hasGPSPermission) {
+      return;
+    }
+
     if (!timeDetail) {
       Alert.alert(t('alert'), t('noTimeInfo'));
       return;
@@ -57,12 +119,12 @@ const Attendance = React.memo(({ navigation }: SignInScreenProps) => {
     } else {
       attendance_start_state = "정상";
     }
-
     const data = {
       attendance_start_date: attendance_start_date,
       attendance_start_time: attendance_start_time,
       attendance_start_state: attendance_start_state,
       start_time: timeDetail.start_time,
+      end_time:timeDetail.end_time,
       rest_start_time: timeDetail.rest_start_time,
       rest_end_time: timeDetail.rest_end_time,
     }
@@ -76,6 +138,8 @@ const Attendance = React.memo(({ navigation }: SignInScreenProps) => {
         },
       );
       if (response.status === 200) {
+        // 출근 성공 후 위치 상태 초기화
+        dispatch(workPlaceSlice.actions.setIsWithinRadius(false));
         Alert.alert(t('alert'), response.data.message);
         navigation.navigate('TimeTable')
       }
@@ -88,6 +152,22 @@ const Attendance = React.memo(({ navigation }: SignInScreenProps) => {
   }
 
   const leaveWork = async () => {
+    // 위치 확인
+    if (!isWithinRadius) {
+      Alert.alert(
+        t('alert'), 
+        '회사 반경 안에 있지 않습니다. GPS 페이지에서 위치를 확인해주세요.',
+        [{ text: '확인' }]
+      );
+      return;
+    }
+
+    // GPS 권한 확인
+    const hasGPSPermission = await checkGPSPermission();
+    if (!hasGPSPermission) {
+      return;
+    }
+
     if (!timeDetail) {
       Alert.alert(t('alert'), t('noTimeInfo'));
       return;
@@ -115,6 +195,8 @@ const Attendance = React.memo(({ navigation }: SignInScreenProps) => {
       );
 
       if (response.status === 200) {
+        // 퇴근 성공 후 위치 상태 초기화
+        dispatch(workPlaceSlice.actions.setIsWithinRadius(false));
         Alert.alert(t('alert'), response.data.message);
         navigation.navigate('TimeTable')
       }
@@ -128,7 +210,6 @@ const Attendance = React.memo(({ navigation }: SignInScreenProps) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#1e1b4b" />
       <View style={styles.content}>
         {/* <View style={styles.noticeBox}>
           <Text style={styles.noticeText}>{t('notice')}</Text>

@@ -5,6 +5,7 @@ import timeSlice from '../slices/time';
 import attendanceSlice from '../slices/attendance';
 import userInfoSlice from '../slices/userInfo';
 import vacationSlice from '../slices/vacation';
+import workPlaceSlice from '../slices/workPlace';
 
 const rootReducer = combineReducers({
   user: userSlice.reducer,
@@ -12,7 +13,7 @@ const rootReducer = combineReducers({
   attendance: attendanceSlice.reducer,
   userInfo: userInfoSlice.reducer,
   vacation: vacationSlice.reducer,
-
+  workPlace: workPlaceSlice.reducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

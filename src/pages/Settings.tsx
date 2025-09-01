@@ -42,7 +42,6 @@ const Settings = React.memo(() => {
   }, [accessToken, dispatch, t]);
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#2563eb" />
 
       <View style={styles.contentContainer}>
         {/* <TouchableOpacity style={styles.actionButton}>
