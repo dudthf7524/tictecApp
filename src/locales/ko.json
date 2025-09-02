@@ -78,6 +78,8 @@
   "languageSelection": "언어 선택",
   "korean": "한국어",
   "english": "English",
-  "japanese": "日本語",
+  "indonesian": "Bahasa Indonesia",
+  "chinese": "中文",
+  "vietnamese": "Tiếng Việt",
   "employeeInfoFailed": "직원 정보 실패:"
 }

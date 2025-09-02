@@ -121,30 +121,36 @@ const TimeTable = React.memo(() => {
               <Icon name="user-check" size={20} color="#667eea" />
               <Text style={styles.cardTitle}>오늘 출근 현황</Text>
             </View>
-            <InfoBlock
-              icon="log-in"
-              iconColor="#10b981"
-              title="출근 일자"
-              value={attendanceToday?.attendance_start_date || '출근 전'}
-            />
-            <InfoBlock
-              icon="clock"
-              iconColor="#10b981"
-              title="출근 시간"
-              value={attendanceToday?.attendance_start_time || '출근 전'}
-            />
-            <InfoBlock
-              icon="log-out"
-              iconColor="#ef4444"
-              title="퇴근 일자"
-              value={attendanceToday?.attendance_end_date || '퇴근 전'}
-            />
-            <InfoBlock
-              icon="clock"
-              iconColor="#ef4444"
-              title="퇴근 시간"
-              value={attendanceToday?.attendance_end_time || '퇴근 전'}
-            />
+            <View style={styles.attendanceRow}>
+              <View style={styles.attendanceColumn}>
+                <InfoBlock
+                  icon="log-in"
+                  iconColor="#10b981"
+                  title="출근 일자"
+                  value={attendanceToday?.attendance_start_date || '출근 전'}
+                />
+                <InfoBlock
+                  icon="clock"
+                  iconColor="#10b981"
+                  title="출근 시간"
+                  value={attendanceToday?.attendance_start_time || '출근 전'}
+                />
+              </View>
+              <View style={styles.attendanceColumn}>
+                <InfoBlock
+                  icon="log-out"
+                  iconColor="#ef4444"
+                  title="퇴근 일자"
+                  value={attendanceToday?.attendance_end_date || '퇴근 전'}
+                />
+                <InfoBlock
+                  icon="clock"
+                  iconColor="#ef4444"
+                  title="퇴근 시간"
+                  value={attendanceToday?.attendance_end_time || '퇴근 전'}
+                />
+              </View>
+            </View>
           </View>
 
 
@@ -286,6 +292,14 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
     color: '#64748b',
+  },
+  attendanceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  attendanceColumn: {
+    flex: 1,
+    marginHorizontal: 4,
   },
 });
 

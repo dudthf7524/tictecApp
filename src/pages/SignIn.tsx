@@ -34,7 +34,9 @@ function SignIn({ navigation }: SignInScreenProps) {
   const languages = [
     { code: 'ko', label: '한국어' },
     { code: 'en', label: 'English' },
-    { code: 'ja', label: '日本語' },
+    { code: 'id', label: 'Bahasa Indonesia' },
+    { code: 'zh', label: '中文' },
+    { code: 'vi', label: 'Tiếng Việt' },
   ];
 
   const changeLanguage = (lng: string) => {
