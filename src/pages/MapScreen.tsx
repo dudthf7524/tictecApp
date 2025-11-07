@@ -19,11 +19,6 @@ type LatLng = {
   longitude: number;
 };
 
-const COMPANY_LOCATION = {
-  latitude: 35.824364,
-  longitude: 128.756343,
-};
-
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const MapScreen = () => {
@@ -96,11 +91,11 @@ const COMPANY_LOCATION = {
             const distance = calculateDistance(
               latitude,
               longitude,
-              Number(workPlaceDetail.location_latitude),
-              Number(workPlaceDetail.location_hardness)
+              workPlaceDetail.location_latitude,
+              workPlaceDetail.location_hardness
             );
             
-            const radius = Number(workPlaceDetail.radius) || 100;
+            const radius = workPlaceDetail.radius || 100;
             setIsWithinRadius(distance <= radius);
           }
         },
@@ -120,11 +115,11 @@ const COMPANY_LOCATION = {
       const distance = calculateDistance(
         userLocation.latitude,
         userLocation.longitude,
-        Number(workPlaceDetail.location_latitude),
-        Number(workPlaceDetail.location_hardness)
+        workPlaceDetail.location_latitude,
+        workPlaceDetail.location_hardness
       );
       
-      const radius = Number(workPlaceDetail.radius) || 100;
+      const radius = workPlaceDetail.radius || 100;
       setIsWithinRadius(distance <= radius);
     }
   }, [userLocation, workPlaceDetail]);
@@ -134,11 +129,11 @@ const COMPANY_LOCATION = {
       const distance = calculateDistance(
         userLocation.latitude,
         userLocation.longitude,
-        Number(workPlaceDetail.location_latitude),
-        Number(workPlaceDetail.location_hardness)
+        workPlaceDetail.location_latitude,
+        workPlaceDetail.location_hardness
       );
       
-      const radius = Number(workPlaceDetail.radius) || 100;
+      const radius = workPlaceDetail.radius || 100;
       const withinRadius = distance <= radius;
       
       // Redux에 위치 상태 저장
@@ -148,7 +143,7 @@ const COMPANY_LOCATION = {
         Alert.alert(
           '위치 확인 완료',
           '회사 반경 안에 위치해 있습니다. 출근/퇴근 페이지로 이동합니다.',
-          [{ text: '확인', onPress: () => navigation.navigate('MainTabs', { screen: 'Attendance' }) }]
+          [{ text: '확인', onPress: () => navigation.navigate('Attendance') }]
         );
       } else {
         Alert.alert(

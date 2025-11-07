@@ -65,7 +65,9 @@ const TimeTable = React.memo(() => {
   return (
     <StaticKeyboardView>
       <SafeAreaView style={styles.container}>
-        <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <View style={styles.scrollContainer} 
+        // showsVerticalScrollIndicator={false}
+        >
           {/* Company Schedule Card */}
 
           {/* Status Summary Card */}
@@ -154,7 +156,7 @@ const TimeTable = React.memo(() => {
           </View>
 
 
-        </ScrollView>
+        </View>
       </SafeAreaView>
     </StaticKeyboardView>
   );
@@ -194,7 +196,6 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#ffffff',
     marginHorizontal: 16,
-    marginBottom: 16,
     borderRadius: 16,
     padding: 16,
   },
@@ -215,7 +216,6 @@ const styles = StyleSheet.create({
   statusCard: {
     backgroundColor: '#ffffff',
     marginHorizontal: 16,
-    marginBottom: 32,
     borderRadius: 16,
     padding: 16,
   },
